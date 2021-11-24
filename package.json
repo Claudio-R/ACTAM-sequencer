@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Claudio-R/ACTAM-sequencer#readme",
   "dependencies": {
+    "standardized-audio-context": "^25.3.15",
     "tone": "^14.7.77",
     "vue": "^2.6.14"
   },
