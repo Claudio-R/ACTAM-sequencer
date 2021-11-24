@@ -1,4 +1,4 @@
-import Vue from ".\node_modules\vue\dist\vue.min.js"
+import Vue from "\node_modules\vue\dist\vue.min.js"
 import * as Tone from "tone"
 
 var app = new Vue({
