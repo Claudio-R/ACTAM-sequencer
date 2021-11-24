@@ -1,0 +1,14 @@
+.pad {
+    width: 30px;
+    height: 30px;
+    margin: 3px;
+    border: 1px solid black;
+}
+
+.pad.active {
+    background-color: pink;
+}
+
+.pad.onBeat {
+    border: 2px solid darkgray;
+}
