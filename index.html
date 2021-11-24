@@ -1,0 +1,23 @@
+<!doctype html>
+
+<html lang="en">    
+    
+    <head>
+        <meta charset="utf-8">
+        <title>example</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+
+        <div id="app">
+            <div v-bind:class = "{active: pad, onBeat: index==beatIndex}" 
+                class="pad" 
+                v-for="(pad, index) in pads"
+                v-on:click="toggleActive(index)">
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>
