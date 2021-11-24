@@ -1,15 +1,89 @@
-.pad {
-    width: 30px;
+#bar {
+    width: 80%;
+    height: 30%;
+    background-color: lightcoral;
+    margin: 2px;
+}
+
+.key {
+    /* location */
+    display: inline-block;
+    /* aspect */
+    width: 36px;
+    height: 58px;
+    background-color: #f4f4e6;
+    padding: 4px;
+    border: 2px solid #0000004d;
+    border-radius: 8%;
+    /* sized */
+    margin: 5px;
+}
+
+.key.active {
+    background-color: red;
+}
+
+.key.active.beat {
+    background-color: rgb(27, 236, 27);
+    animation-name: beat;
+    animation-duration: 0.5s;
+}
+
+@keyframes beat {
+    from {transform: rotate(0deg);}
+    to {transform: rotate(-180deg);}
+}
+
+
+.key.beat {
+    background-color: yellow;
+}
+
+.controllerContainer {
+    width: 80%;
+}
+
+/* The slider itself */
+.slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 25px; /* Specified height */
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
+    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+    opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+    .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 25px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: #04AA6D; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+    width: 25px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: #04AA6D; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+button {
+    position: relative;
+
+    width: 20px;
     height: 30px;
-    margin: 3px;
-    border: 1px solid black;
-    padding: 3px;
-}
-
-.pad.active {
-    background-color: pink;
-}
-
-.pad.onBeat {
-    border: 2px solid darkgray;
+    background-color: #dfdfcc;
+    margin: 10px;
+    padding: 4px;
 }
