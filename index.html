@@ -1,0 +1,35 @@
+<!doctype html>
+
+<html lang="en">   
+
+    <head>
+
+        <meta charset="utf-8">
+        <title>sequencer</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <div id="bar">
+            <div id="sequencer">
+                <div v-bind:class="{key: true, active: k, beat: index == beat}" 
+                    v-for="(k, index) in keys"
+                    v-on:click="toggleKey(index)">
+                </div>
+            </div>
+        </div>
+
+        <div class="controllerContainer">
+            <input type="range" min="1" max="180" value="90" class="slider" id="myRange">
+            <button id="butt1">+</button>
+            <button id="butt2">-</button>
+        </div>
+        
+        <div id=totalBeats></div>
+        
+        <link rel="stylesheet" href="style.css">
+    
+    </head>
+    
+    <body>
+        <script type=module src="script.js"></script>
+    </body>
+</html>
