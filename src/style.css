@@ -1,11 +1,26 @@
-#bar {
+#sequencer {
+
+    /*location*/
+    position: relative;
+    
+    /*size*/
     width: 80%;
-    height: 30%;
-    background-color: lightcoral;
-    margin: 2px;
+    height: 50%;
+
+    /*aspect*/
+    border: 2px solid aqua;
+    border-radius: 5px;
+
+    /*color*/
+    background-color: aquamarine;
 }
 
-.key {
+.controller-container {
+    border: 2px solid salmon;
+
+}
+
+.beat {
     /* location */
     display: inline-block;
     /* aspect */
@@ -19,28 +34,27 @@
     margin: 5px;
 }
 
-.key.active {
+.beat.active {
     background-color: red;
 }
 
-.key.active.beat {
+.beat.active.playing {
     background-color: rgb(27, 236, 27);
     animation-name: beat;
     animation-duration: 0.5s;
 }
 
-@keyframes beat {
+@keyframes isPlaying {
     from {transform: rotate(0deg);}
     to {transform: rotate(-180deg);}
 }
 
+.remove-layer-button {
+    width: auto;
+    height: 30px;
 
-.key.beat {
-    background-color: yellow;
-}
-
-.controllerContainer {
-    width: 80%;
+    border-radius: 10px;
+    background-color: cadetblue;
 }
 
 /* The slider itself */
@@ -76,14 +90,4 @@
     height: 25px; /* Slider handle height */
     background: #04AA6D; /* Green background */
     cursor: pointer; /* Cursor on hover */
-}
-
-button {
-    position: relative;
-
-    width: 20px;
-    height: 30px;
-    background-color: #dfdfcc;
-    margin: 10px;
-    padding: 4px;
 }
