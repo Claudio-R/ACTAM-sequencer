@@ -1,108 +1,208 @@
-/**
- * TODO
- * 1. add playing beat function
- * 2. adjust size of beats
+/** TODO
+ * 1. check dynamic update of bpm
+ * 2. check if slider visualization now works 
  */
 
-Vue.component('beat-component', {
-    template: '\
-        <li\
-            {{ this }}\
-            <button v-on:click="$emit(\'toggle\')"></button>\
-        ></li>\
-    ',
-})
+Vue.config.devtools = true
 
-Vue.component('layer-component', {
-
-    template: '\
-        <ol>\
-            <li\
-                is="beat-component"\
-                v-for="(b, index) in beats"\
-                v-bind:class="{beat: true, active: b, playing: index == isPlaying}"\
-                v-on:toggle="toggleBeat(index)"\
-            ></li>\
-            <button class="remove-layer-button" v-on:click="$emit(\'remove\')">Remove layer</button>\
-        </ol>\
+let controllerComponent = {
+    template:'\
+        <div id="controller">\
+            <input type="number" v-model="newInput" placeholder="Add a layer (press enter)" @change="addLayer">\
+            <input type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @change="updateBPM">\
+            <button @click="playAll">RESET</button>\
+            <button @click="stopAll">Stop</button>\
+        </div>\
     ',
-    props: ['beats', 'isPlaying', 'beat_duration'],
+    data() {
+        return {
+            newInput: '',
+            bpm_value: '',
+        }
+
+    },
 
     computed: {
-        beat_duration: {
-            function() {
-                return sequencer.beat_duration/this.beats.length
+        newInput_toNumber() {
+            return this.newInput ? parseInt(this.newInput) : null
+        },
+        bpm_value_toNumber() {
+            return this.bpm_value ? parseInt(this.bpm_value) : null
+        }
+    },
+
+    methods: {
+        addLayer() {
+            this.$emit('newLayerEvent', this.newInput_toNumber)
+        },
+        updateBPM() {
+            this.$emit('bpmEvent', this.bpm_value_toNumber)
+        },
+        playAll() {
+            this.$emit('playAllEvent')
+        },
+        stopAll() {
+            this.$emit('stopAllEvent')
+        },
+    }
+};
+
+let keyComponent = {
+
+    template:'\
+        <div class="key" :class="{active : state}" \
+        @click="toggleActive"></div>\
+    ',
+
+    props: {
+        state: {
+            default: false,
+            required: true,
+        },
+        isPlaying: {
+            default: false,
+            required: true,
+        }
+    },
+
+    methods: {
+        toggleActive() {
+            this.state = !this.state
+        }
+    }
+}
+
+let layerComponent = {
+
+    template:'\
+        <div>\
+            <key-component v-for="k in num_beats"\
+            :class="{playing : k === isPlaying + 1}"></key-component>\
+        </div>\
+    ',
+    
+    components: {
+        'key-component' : keyComponent
+    },
+    
+    props : ['num_beats','current_bpm','total_duration'],
+    
+    data() {
+        return {
+            isPlaying: 0,
+            my_clock: '',
+        }
+    },
+    
+    computed: {
+        my_beat_duration() {
+            return this.total_duration/this.num_beats;
+        }
+    },
+
+    methods: {
+        next() {
+            this.isPlaying = (this.isPlaying + 1) % (this.num_beats);
+        },
+        stop() {
+            clearInterval(this.my_clock)
+        },
+        play() {
+            this.stop;
+            this.my_clock = setInterval(this.next,this.my_beat_duration)
+        },
+    }
+};
+
+let sequencerComponent = {
+    
+    template: '\
+        <div>\
+            <p>BPM: {{bpm}}</p>\
+            <controller-component\
+                @newLayerEvent="addLayer"\
+                @bpmEvent="updateBPM"\
+                @playAllEvent="playAll"\
+                @stopAllEvent="stopAll"\
+            ></controller-component>\
+            <layer-component v-for="layer in layers"\
+                ref="layers_refs"\
+                :num_beats="layer.num_beats"\
+                :current_bpm="bpm"\
+                :total_duration="bar_duration">\
+                :bus="control_bus"\
+            </layer-component>\
+        </div>\
+    ',
+    
+    components: {
+        'layer-component' : layerComponent,
+        'controller-component' : controllerComponent,
+    },
+    
+    data(){
+        return {
+            bpm: 60,
+            layers: [
+                {
+                    num_beats: 4
+                },
+                {
+                    num_beats: 5
+                },
+            ]
+        }
+    },
+
+    computed: {
+        bar_duration() {
+            if(this.layers[0]){
+                return this.layers[0].num_beats*60000/this.bpm
             }
         }
     },
 
     methods: {
-        toggleBeat: function(index) {
-            Vue.set(this.beats, index, !this.beats[index]);
+        addLayer(num_beats_input) {
+            this.layers.push({num_beats: num_beats_input})
         },
-        nextBeat: function() {
-            this.isPlaying = (this.isPlaying + 1) % this.beats.length;
-        }
 
+        /** errors when bpm is updated while playing */
+        updateBPM(bpm_input) {
+            /** clear the current clock */
+            for(idx in this.layers) {
+                this.$refs.layers_refs[idx].stop()
+            }
+            /** assign new bpm value */
+            this.bpm = bpm_input
+            for(idx in this.layers) {
+                ref = this.$refs.layers_refs[idx]
+                ref.my_clock = setInterval(ref.next,ref.my_beat_duration)
+            }
+
+        },
+        /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */
+        playAll() {
+            /** first reset all layers */
+            for(idx in this.layers) {
+                this.$refs.layers_refs[idx].isPlaying = 0
+            }
+            /** then restart */
+            for(idx in this.layers) {
+                this.$refs.layers_refs[idx].play()
+            }
+        },
+        stopAll() {
+            for(idx in this.layers) {
+                this.$refs.layers_refs[idx].stop()
+            }
+        },
+    }
+}
+
+var app = new Vue({
+    el:'#app',
+    components: {
+        'sequencer-component': sequencerComponent
     }
 })
-
-var sequencer = new Vue({ 
-    
-    el:'#sequencer',
-
-    data: {
-        //slider: document.querySelector('#bpm-selector'),
-        bpm: 90,
-        clock: '',
-        layers: [], // modificando i valori in questo array si modificano dinamicamente i componenti grazie a v-bind
-        nextLayerId: 3,
-        num_beats: '',
-        total_duration: '',
-    },
-
-    methods: {
-        addNewLayer: function() {
-            var beats_array  = [];
-            var single_beat_duration;
-            // crea un array del numero corretto di beats
-            for(var i=0; i<this.num_beats; i++) {
-                beats_array.push(false);
-            };
-            // reference duration
-            if(!this.layers[0]){
-                this.total_duration = this.num_beats*60000/this.bpm
-            }
-            single_beat_duration = this.total_duration/this.num_beats
-            this.layers.push({
-                id: this.nextLayerId++,
-                beats: beats_array,
-                beat_duration: single_beat_duration,
-                isPlaying: null,
-            })
-            this.num_beats = '';
-        },
-
-        bpm_updated: function() {
-            var single_beat_duration;
-
-            for(var i=0; i<this.layers.length; i++) {
-                single_beat_duration = this.total_duration/this.layers[i].beats.length
-                this.layers[i].beat_duration = single_beat_duration
-                console.log(this.layers[i].beat_duration)
-            }
-        }
-    }
-});
-
- // MODEL
-var slider = document.getElementById('bpm-selector')
-slider.oninput = function() {
-    sequencer.bpm = parseInt(this.value);
-    
-    if(sequencer.layers[0]) { 
-        sequencer.total_duration = sequencer.layers[0].beats.length*60000/sequencer.bpm;
-        sequencer.bpm_updated() 
-    }; 
-}
- 

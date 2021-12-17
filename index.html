@@ -1,49 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <html lang="en">   
 
     <head>
         <meta charset="utf-8">
-        <title>sequencer</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
-
+        <title>sequencer</title>
         <link rel="stylesheet" href="/src/style.css">
-        
     </head>
 
     <body>
-        <div id="sequencer">
-            
-            <!-- Controller section -->
-            <form class="controller-container">
-                <label for="new-layer">How many beats?</label>
-                <input
-                    v-model="num_beats"
-                    id="new-layer"
-                    placeholder="E.g. 5"
-                >
-                <button v-on:click.prevent="addNewLayer()">Add</button>
-                <input id="bpm-selector" type="range" min="1" max="200" value="100">    
-            </form>
-
-            <!-- list of matrices -->
-            <ol>
-                <li
-                    is="layer-component"
-                    v-for="(layer, index) in layers"
-                    v-bind:key="layer.id"
-                    v-bind:beats="layer.beats"
-                    v-bind:beat_duration="layer.beat_duration"
-                    v-bind:isPlaying="layer.isPlaying"
-                    v-on:remove="layers.splice(index,1)"
-                ></li>
-            </ol>
-        
+        <div id="app">
+            <sequencer-component></sequencer-component>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
         <script src="/src/script.js"></script>
-        
     </body>
 
 </html>
