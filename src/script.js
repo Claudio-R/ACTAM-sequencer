@@ -1,17 +1,18 @@
 /** TODO
- * 1. check dynamic update of bpm
- * 2. check if slider visualization now works 
+ * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
+ * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
+ * 3. manage shapes
  */
 
 Vue.config.devtools = true
 
 let controllerComponent = {
     template:'\
-        <div id="controller">\
-            <input type="number" v-model="newInput" placeholder="Add a layer (press enter)" @change="addLayer">\
-            <input type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @change="updateBPM">\
-            <button @click="playAll">RESET</button>\
-            <button @click="stopAll">Stop</button>\
+        <div class="controller-container">\
+            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
+            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
+            <button class="btn-1" @click="playAll">Play all</button>\
+            <button class="btn-1" @click="stopAll">Stop</button>\
         </div>\
     ',
     data() {
@@ -78,6 +79,7 @@ let layerComponent = {
         <div>\
             <key-component v-for="k in num_beats"\
             :class="{playing : k === isPlaying + 1}"></key-component>\
+            <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
         </div>\
     ',
     
@@ -85,7 +87,7 @@ let layerComponent = {
         'key-component' : keyComponent
     },
     
-    props : ['num_beats','current_bpm','total_duration'],
+    props : ['num_beats','total_duration','system_playing'],
     
     data() {
         return {
@@ -108,7 +110,7 @@ let layerComponent = {
             clearInterval(this.my_clock)
         },
         play() {
-            this.stop;
+            this.stop();
             this.my_clock = setInterval(this.next,this.my_beat_duration)
         },
     }
@@ -118,19 +120,21 @@ let sequencerComponent = {
     
     template: '\
         <div>\
-            <p>BPM: {{bpm}}</p>\
+            <div class="view-box">\
+                <p id="bpm-viewer">BPM: {{bpm}}</p>\
+            </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
                 @bpmEvent="updateBPM"\
                 @playAllEvent="playAll"\
                 @stopAllEvent="stopAll"\
             ></controller-component>\
-            <layer-component v-for="layer in layers"\
+            <layer-component class="layer" v-for="(layer,index) in layers"\
                 ref="layers_refs"\
                 :num_beats="layer.num_beats"\
-                :current_bpm="bpm"\
-                :total_duration="bar_duration">\
-                :bus="control_bus"\
+                :total_duration="bar_duration"\
+                :system_playing="playing"\
+                @remove="layers.splice(index,1)">\
             </layer-component>\
         </div>\
     ',
@@ -143,6 +147,7 @@ let sequencerComponent = {
     data(){
         return {
             bpm: 60,
+            playing: false,
             layers: [
                 {
                     num_beats: 4
@@ -166,20 +171,10 @@ let sequencerComponent = {
         addLayer(num_beats_input) {
             this.layers.push({num_beats: num_beats_input})
         },
-
         /** errors when bpm is updated while playing */
         updateBPM(bpm_input) {
-            /** clear the current clock */
-            for(idx in this.layers) {
-                this.$refs.layers_refs[idx].stop()
-            }
             /** assign new bpm value */
             this.bpm = bpm_input
-            for(idx in this.layers) {
-                ref = this.$refs.layers_refs[idx]
-                ref.my_clock = setInterval(ref.next,ref.my_beat_duration)
-            }
-
         },
         /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */
         playAll() {
@@ -188,6 +183,7 @@ let sequencerComponent = {
                 this.$refs.layers_refs[idx].isPlaying = 0
             }
             /** then restart */
+            this.playing = true
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].play()
             }
@@ -196,6 +192,7 @@ let sequencerComponent = {
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].stop()
             }
+            this.playing = false
         },
     }
 }

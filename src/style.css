@@ -8,38 +8,77 @@
     height: 50%;
 
     /*aspect*/
-    border: 2px solid aqua;
+    border: 2px solid rgb(199, 202, 0);
     border-radius: 5px;
 
     /*color*/
-    background-color: aquamarine;
+    background-color: rgb(19, 109, 116);
 }
 
 .controller-container {
-    border: 2px solid salmon;
+    background-color: beige;
+    border-radius: 10px;
+    margin: 10px;
+    height: 50px;
+}
 
+.view-box {
+    background-color: beige;
+    border-radius: 10px;
+    margin-top: 15px;
+    margin: 10px;
+    height: 30px;
+}
+
+.text-input {
+    margin: 5px;
+}
+
+.btn-1{
+    margin: 5px;
+}
+
+#bpm-viewer{
+    margin: 10px;
+}
+
+.layer {
+    margin: 10px;
+    border-radius: 10px;
+    height: 115px;
+    background-color: rgb(199, 202, 0);
 }
 
 .key {
     /* location */
     display: inline-block;
     /* aspect */
-    width: 36px;
-    height: 58px;
-    background-color: #f4f4e6;
+    width: 34px;
+    height: 56px;
+    background-color: #c0a630;
     padding: 4px;
-    border: 2px solid #0000004d;
+    border: 3px solid #0000004d;
     border-radius: 8%;
     /* sized */
-    margin: 5px;
+    margin-left: 10px;
+    margin-top: 10px;
+
 }
 
 .active {
-    background-color: red;
-    border: 1px solid purple;
+    width: 34px;
+    height: 56px;
+    background-color: rgb(128, 53, 151);
+    border: 3px solid rgb(106, 51, 122);
 }
 
 .playing {
-    border: 2px solid orange;
-    background-color: greenyellow;
+    width: 34px;
+    height: 56px;
+    border: 3px solid rgb(208, 255, 0);
+   }
+
+.ctrl-btn {
+    display: flex;
+    margin-left: 10px;
 }
