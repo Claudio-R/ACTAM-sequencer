@@ -1,35 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 
 <html lang="en">   
 
     <head>
-
         <meta charset="utf-8">
-        <title>sequencer</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        
-        <div id="bar">
-            <div id="sequencer">
-                <div v-bind:class="{key: true, active: k, beat: index == beat}" 
-                    v-for="(k, index) in keys"
-                    v-on:click="toggleKey(index)">
-                </div>
-            </div>
+        <title>sequencer</title>
+        <link rel="stylesheet" href="/src/style.css">
+    </head>
+
+    <body>
+        <div id="app">
+            <sequencer-component></sequencer-component>
         </div>
 
-        <div class="controllerContainer">
-            <input type="range" min="1" max="180" value="90" class="slider" id="myRange">
-            <button id="butt1">+</button>
-            <button id="butt2">-</button>
-        </div>
-        
-        <div id=totalBeats></div>
-        
-        <link rel="stylesheet" href="style.css">
-    
-    </head>
-    
-    <body>
-        <script type=module src="script.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+        <script src="/src/script.js"></script>
     </body>
+
 </html>
