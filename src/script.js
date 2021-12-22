@@ -51,8 +51,10 @@ let controllerComponent = {
 let keyComponent = {
 
     template:'\
+        <div class="keyback">\
         <div class="key" :class="{active : state}" \
         @click="toggleActive"></div>\
+        </div>\
     ',
 
     props: {

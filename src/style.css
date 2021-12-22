@@ -51,31 +51,43 @@
 
 .key {
     /* location */
-    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     /* aspect */
-    width: 34px;
-    height: 56px;
-    background-color: #c0a630;
-    padding: 4px;
-    border: 3px solid #0000004d;
-    border-radius: 8%;
-    /* sized */
-    margin-left: 10px;
-    margin-top: 10px;
+    width: 10px;
+    height: 10px;
+    background-color: #575757;
+    padding: none;
+    border: 2px solid #0000004d;
+    border-radius: 100%;
 
+}
+
+.keyback {
+    /* location */
+    display: inline-block;
+    position: relative;
+    /* aspect */
+    width: 30px;
+    height: 50px;
+    background-color: rgb(152, 197, 101);
+    border: 3px solid rgb(111, 114, 96);
 }
 
 .active {
-    width: 34px;
-    height: 56px;
-    background-color: rgb(128, 53, 151);
-    border: 3px solid rgb(106, 51, 122);
+    width: 14px;
+    height: 14px;
+    background-color: rgb(170, 8, 8);
+    border: none;
 }
 
 .playing {
-    width: 34px;
-    height: 56px;
+    width: 30px;
+    height: 50px;
     border: 3px solid rgb(208, 255, 0);
+    background-color: 3px solid rgb(209, 255, 2);
    }
 
 .ctrl-btn {
