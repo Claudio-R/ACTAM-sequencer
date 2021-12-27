@@ -67,7 +67,7 @@
          },
          id: {
              type: Number,
-         }
+         },
          myLayerId: {
              type: Number,
          }
@@ -98,7 +98,7 @@
                 class="keyback" :style="cssVars"\
                 :class="{playing : k === isPlaying + 1}"\
                 :myLayerId="layerId"\
-                :numKeys="num_beats">\
+                :numKeys="num_beats"\
                 :id="k-1"\
                 :isPlaying="isPlaying"\
                 @playSound="playNote">\
@@ -148,6 +148,9 @@
         play() {
             this.stop();
             this.my_clock = setInterval(this.next,this.my_beat_duration)
+        },
+        playNote(){
+            synth.triggerAttackRelease("A4","16n")
         },
     }
 };
@@ -250,3 +253,4 @@ var app = new Vue({
     }
 })
 
+var synth = new Tone.PolySynth().toDestination();
