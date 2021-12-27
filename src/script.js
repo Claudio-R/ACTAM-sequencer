@@ -1,7 +1,7 @@
 /** TODO
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
- * 3. manage shapes
+ * 3. manage shapes --UPDATE riusciamo a bindare una width diversa per ogni layer
  */
 
 Vue.config.devtools = true
@@ -20,7 +20,6 @@ let controllerComponent = {
             newInput: '',
             bpm_value: '',
         }
-
     },
 
     computed: {
@@ -51,7 +50,7 @@ let controllerComponent = {
 let keyComponent = {
 
     template:'\
-        <div class="key" :class="{active : state}" \
+        <div :class="{active : state}" \
         @click="toggleActive"></div>\
     ',
 
@@ -63,7 +62,19 @@ let keyComponent = {
         isPlaying: {
             default: false,
             required: true,
+        },
+        numKeys: {
+            type: Number,
+            required: true,
+        },
+        myLayerId: {
+            type: Number,
+            required: true
         }
+    },
+
+    computed: {
+        
     },
 
     methods: {
@@ -78,7 +89,11 @@ let layerComponent = {
     template:'\
         <div>\
             <key-component v-for="k in num_beats"\
-            :class="{playing : k === isPlaying + 1}"></key-component>\
+                class="key" :style="cssVars"\
+                :class="{playing : k === isPlaying + 1}"\
+                :myLayerId="layerId"\
+                :numKeys="num_beats">\
+            </key-component>\
             <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
         </div>\
     ',
@@ -87,18 +102,29 @@ let layerComponent = {
         'key-component' : keyComponent
     },
     
-    props : ['num_beats','total_duration','system_playing'],
+    props : ['layerId','num_beats','total_duration','system_playing'],
     
     data() {
         return {
             isPlaying: 0,
             my_clock: '',
+            margin: 5,
         }
     },
     
     computed: {
         my_beat_duration() {
             return this.total_duration/this.num_beats;
+        },
+        layer_width() { 
+            return document.getElementById('app').offsetWidth - 24
+        }, /* - layer margin né app border */
+        //layer_width() { return this.$el.offsetWidth}, /* non funziona così */
+        cssVars() {
+            return {
+                '--margin': this.margin + 'px',
+                '--keyWidth': (this.layer_width - this.num_beats*2*this.margin)/this.num_beats + 'px'
+                }
         }
     },
 
@@ -131,6 +157,7 @@ let sequencerComponent = {
             ></controller-component>\
             <layer-component class="layer" v-for="(layer,index) in layers"\
                 ref="layers_refs"\
+                :layerId="layer.id"\
                 :num_beats="layer.num_beats"\
                 :total_duration="bar_duration"\
                 :system_playing="playing"\
@@ -148,12 +175,15 @@ let sequencerComponent = {
         return {
             bpm: 60,
             playing: false,
+            nextId: 2,
             layers: [
                 {
-                    num_beats: 4
+                    id: 0,
+                    num_beats: 3
                 },
                 {
-                    num_beats: 5
+                    id: 1,
+                    num_beats: 2
                 },
             ]
         }
@@ -169,7 +199,13 @@ let sequencerComponent = {
 
     methods: {
         addLayer(num_beats_input) {
-            this.layers.push({num_beats: num_beats_input})
+            this.layers.push(
+                {   
+                    id: this.nextId,
+                    num_beats: num_beats_input
+                }
+            )
+            this.nextId += 1
         },
         /** errors when bpm is updated while playing */
         updateBPM(bpm_input) {
