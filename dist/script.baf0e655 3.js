@@ -126,13 +126,13 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Vue.config.devtools = true;
 var controllerComponent = {
   template: '\
-         <div class="controller-container">\
-             <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-             <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-             <button class="btn-1" @click="playAll">Play all</button>\
-             <button class="btn-1" @click="stopAll">Stop</button>\
-         </div>\
-     ',
+        <div class="controller-container">\
+            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
+            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
+            <button class="btn-1" @click="playAll">Play all</button>\
+            <button class="btn-1" @click="stopAll">Stop</button>\
+        </div>\
+    ',
   data: function data() {
     return {
       newInput: '',
@@ -164,21 +164,19 @@ var controllerComponent = {
 };
 var keyComponent = {
   template: '\
-         <div>\
-         <div class="key" :class="{active : state}" \
-         @click="toggleActive"></div>\
-         </div>\
-     ',
+        <div>\
+        <div class="key" :class="{active : state}" \
+        @click="toggleActive"></div>\
+        </div>\
+    ',
   props: {
     state: {
       default: false,
       required: true
     },
     isPlaying: {
-      type: Number
-    },
-    id: {
-      type: Number
+      default: false,
+      required: true
     }
   },
   methods: {
@@ -192,7 +190,7 @@ var keyComponent = {
   },
   watch: {
     'isPlaying': function isPlaying() {
-      if (this.state && this.isPlaying == this.id) {
+      if (this.state && this.isPlaying) {
         this.$emit('playSound');
       }
     }
@@ -201,16 +199,11 @@ var keyComponent = {
 var layerComponent = {
   template: '\
         <div>\
-            <key-component v-for="k in num_beats"\
-                class="keyback"\
-                :class="{playing :k === isPlaying + 1}"\
-                :id="k-1"\
-                :isPlaying="isPlaying"\
-                @playSound="playNote">\
-            </key-component>\
+            <key-component v-for="k in num_beats" @playSound="playNote"\
+            class="keyback" :class="{playing :k === isPlaying + 1}"></key-component>\
             <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
         </div>\
-     ',
+    ',
   components: {
     'key-component': keyComponent
   },
@@ -244,25 +237,25 @@ var layerComponent = {
 };
 var sequencerComponent = {
   template: '\
-         <div>\
-             <div class="view-box">\
-                 <p id="bpm-viewer">BPM: {{bpm}}</p>\
-             </div>\
-             <controller-component\
-                 @newLayerEvent="addLayer"\
-                 @bpmEvent="updateBPM"\
-                 @playAllEvent="playAll"\
-                 @stopAllEvent="stopAll"\
-             ></controller-component>\
-             <layer-component class="layer" v-for="(layer,index) in layers"\
-                 ref="layers_refs"\
-                 :num_beats="layer.num_beats"\
-                 :total_duration="bar_duration"\
-                 :system_playing="playing"\
-                 @remove="layers.splice(index,1)">\
-             </layer-component>\
-         </div>\
-     ',
+        <div>\
+            <div class="view-box">\
+                <p id="bpm-viewer">BPM: {{bpm}}</p>\
+            </div>\
+            <controller-component\
+                @newLayerEvent="addLayer"\
+                @bpmEvent="updateBPM"\
+                @playAllEvent="playAll"\
+                @stopAllEvent="stopAll"\
+            ></controller-component>\
+            <layer-component class="layer" v-for="(layer,index) in layers"\
+                ref="layers_refs"\
+                :num_beats="layer.num_beats"\
+                :total_duration="bar_duration"\
+                :system_playing="playing"\
+                @remove="layers.splice(index,1)">\
+            </layer-component>\
+        </div>\
+    ',
   components: {
     'layer-component': layerComponent,
     'controller-component': controllerComponent

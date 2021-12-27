@@ -117,219 +117,79 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"src/script.js":[function(require,module,exports) {
-/** TODO
- * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
- * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
- * 3. manage shapes
- */
-Vue.config.devtools = true;
-var controllerComponent = {
-  template: '\
-         <div class="controller-container">\
-             <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-             <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-             <button class="btn-1" @click="playAll">Play all</button>\
-             <button class="btn-1" @click="stopAll">Stop</button>\
-         </div>\
-     ',
-  data: function data() {
-    return {
-      newInput: '',
-      bpm_value: ''
-    };
-  },
-  computed: {
-    newInput_toNumber: function newInput_toNumber() {
-      return this.newInput ? parseInt(this.newInput) : null;
-    },
-    bpm_value_toNumber: function bpm_value_toNumber() {
-      return this.bpm_value ? parseInt(this.bpm_value) : null;
-    }
-  },
-  methods: {
-    addLayer: function addLayer() {
-      this.$emit('newLayerEvent', this.newInput_toNumber);
-    },
-    updateBPM: function updateBPM() {
-      this.$emit('bpmEvent', this.bpm_value_toNumber);
-    },
-    playAll: function playAll() {
-      this.$emit('playAllEvent');
-    },
-    stopAll: function stopAll() {
-      this.$emit('stopAllEvent');
+})({"node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+var bundleURL = null;
+
+function getBundleURLCached() {
+  if (!bundleURL) {
+    bundleURL = getBundleURL();
+  }
+
+  return bundleURL;
+}
+
+function getBundleURL() {
+  // Attempt to find the URL of the current script and use that as the base URL
+  try {
+    throw new Error();
+  } catch (err) {
+    var matches = ('' + err.stack).match(/(https?|file|ftp|chrome-extension|moz-extension):\/\/[^)\n]+/g);
+
+    if (matches) {
+      return getBaseURL(matches[0]);
     }
   }
-};
-var keyComponent = {
-  template: '\
-         <div>\
-         <div class="key" :class="{active : state}" \
-         @click="toggleActive"></div>\
-         </div>\
-     ',
-  props: {
-    state: {
-      default: false,
-      required: true
-    },
-    isPlaying: {
-      type: Number
-    },
-    id: {
-      type: Number
-    }
-  },
-  methods: {
-    toggleActive: function toggleActive() {
-      this.state = !this.state;
 
-      if (this.state) {
-        this.$emit('playSound');
-      }
-    }
-  },
-  watch: {
-    'isPlaying': function isPlaying() {
-      if (this.state && this.isPlaying == this.id) {
-        this.$emit('playSound');
-      }
-    }
+  return '/';
+}
+
+function getBaseURL(url) {
+  return ('' + url).replace(/^((?:https?|file|ftp|chrome-extension|moz-extension):\/\/.+)?\/[^/]+(?:\?.*)?$/, '$1') + '/';
+}
+
+exports.getBundleURL = getBundleURLCached;
+exports.getBaseURL = getBaseURL;
+},{}],"node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
+var bundle = require('./bundle-url');
+
+function updateLink(link) {
+  var newLink = link.cloneNode();
+
+  newLink.onload = function () {
+    link.remove();
+  };
+
+  newLink.href = link.href.split('?')[0] + '?' + Date.now();
+  link.parentNode.insertBefore(newLink, link.nextSibling);
+}
+
+var cssTimeout = null;
+
+function reloadCSS() {
+  if (cssTimeout) {
+    return;
   }
-};
-var layerComponent = {
-  template: '\
-        <div>\
-            <key-component v-for="k in num_beats"\
-                class="keyback"\
-                :class="{playing :k === isPlaying + 1}"\
-                :id="k-1"\
-                :isPlaying="isPlaying"\
-                @playSound="playNote">\
-            </key-component>\
-            <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
-        </div>\
-     ',
-  components: {
-    'key-component': keyComponent
-  },
-  props: ['num_beats', 'total_duration', 'system_playing'],
-  data: function data() {
-    return {
-      isPlaying: 0,
-      my_clock: ''
-    };
-  },
-  computed: {
-    my_beat_duration: function my_beat_duration() {
-      return this.total_duration / this.num_beats;
-    }
-  },
-  methods: {
-    next: function next() {
-      this.isPlaying = (this.isPlaying + 1) % this.num_beats;
-    },
-    stop: function stop() {
-      clearInterval(this.my_clock);
-    },
-    play: function play() {
-      this.stop();
-      this.my_clock = setInterval(this.next, this.my_beat_duration);
-    },
-    playNote: function playNote() {
-      synth.triggerAttackRelease("A4", "16n");
-    }
-  }
-};
-var sequencerComponent = {
-  template: '\
-         <div>\
-             <div class="view-box">\
-                 <p id="bpm-viewer">BPM: {{bpm}}</p>\
-             </div>\
-             <controller-component\
-                 @newLayerEvent="addLayer"\
-                 @bpmEvent="updateBPM"\
-                 @playAllEvent="playAll"\
-                 @stopAllEvent="stopAll"\
-             ></controller-component>\
-             <layer-component class="layer" v-for="(layer,index) in layers"\
-                 ref="layers_refs"\
-                 :num_beats="layer.num_beats"\
-                 :total_duration="bar_duration"\
-                 :system_playing="playing"\
-                 @remove="layers.splice(index,1)">\
-             </layer-component>\
-         </div>\
-     ',
-  components: {
-    'layer-component': layerComponent,
-    'controller-component': controllerComponent
-  },
-  data: function data() {
-    return {
-      bpm: 60,
-      playing: false,
-      layers: [{
-        num_beats: 4
-      }, {
-        num_beats: 5
-      }]
-    };
-  },
-  computed: {
-    bar_duration: function bar_duration() {
-      if (this.layers[0]) {
-        return this.layers[0].num_beats * 60000 / this.bpm;
+
+  cssTimeout = setTimeout(function () {
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+
+    for (var i = 0; i < links.length; i++) {
+      if (bundle.getBaseURL(links[i].href) === bundle.getBundleURL()) {
+        updateLink(links[i]);
       }
     }
-  },
-  methods: {
-    addLayer: function addLayer(num_beats_input) {
-      this.layers.push({
-        num_beats: num_beats_input
-      });
-    },
 
-    /** errors when bpm is updated while playing */
-    updateBPM: function updateBPM(bpm_input) {
-      /** assign new bpm value */
-      this.bpm = bpm_input;
-    },
+    cssTimeout = null;
+  }, 50);
+}
 
-    /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */
-    playAll: function playAll() {
-      /** first reset all layers */
-      for (idx in this.layers) {
-        this.$refs.layers_refs[idx].isPlaying = 0;
-      }
-      /** then restart */
+module.exports = reloadCSS;
+},{"./bundle-url":"node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"src/style.css":[function(require,module,exports) {
+var reloadCSS = require('_css_loader');
 
-
-      this.playing = true;
-
-      for (idx in this.layers) {
-        this.$refs.layers_refs[idx].play();
-      }
-    },
-    stopAll: function stopAll() {
-      for (idx in this.layers) {
-        this.$refs.layers_refs[idx].stop();
-      }
-
-      this.playing = false;
-    }
-  }
-};
-var app = new Vue({
-  el: '#app',
-  components: {
-    'sequencer-component': sequencerComponent
-  }
-});
-var synth = new Tone.PolySynth().toDestination();
-},{}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+module.hot.dispose(reloadCSS);
+module.hot.accept(reloadCSS);
+},{"_css_loader":"node_modules/parcel-bundler/src/builtins/css-loader.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -533,5 +393,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["node_modules/parcel-bundler/src/builtins/hmr-runtime.js","src/script.js"], null)
-//# sourceMappingURL=/script.baf0e655.js.map
+},{}]},{},["node_modules/parcel-bundler/src/builtins/hmr-runtime.js"], null)
+//# sourceMappingURL=/style.c61ab535.js.map

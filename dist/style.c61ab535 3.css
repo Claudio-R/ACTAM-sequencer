@@ -1,0 +1,101 @@
+#app {
+
+    /*location*/
+    position: relative;
+    
+    /*size*/
+    width: 80%;
+    height: 50%;
+
+    /*aspect*/
+    border: 2px solid rgb(199, 202, 0);
+    border-radius: 5px;
+
+    /*color*/
+    background-color: rgb(19, 109, 116);
+}
+
+.controller-container {
+    background-color: beige;
+    border-radius: 10px;
+    margin: 10px;
+    height: 50px;
+}
+
+.view-box {
+    background-color: beige;
+    border-radius: 10px;
+    margin-top: 15px;
+    margin: 10px;
+    height: 30px;
+}
+
+.text-input {
+    margin: 5px;
+}
+
+.btn-1{
+    margin: 5px;
+}
+
+#bpm-viewer{
+    margin: 10px;
+}
+
+.layer {
+    margin: 10px;
+    border-radius: 10px;
+    height: 115px;
+    background-color: rgb(199, 202, 0);
+}
+
+.key {
+    /* location */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* aspect */
+    width: 10px;
+    height: 10px;
+    background-color: #575757;
+    padding: none;
+    border: 2px solid #0000004d;
+    border-radius: 100%;
+
+}
+
+.keyback {
+    /* location */
+    display: inline-block;
+    position: relative;
+    /* aspect */
+    width: 30px;
+    height: 50px;
+    background-color: rgb(152, 197, 101);
+    border: 3px solid rgb(111, 114, 96);
+}
+
+.active {
+    width: 14px;
+    height: 14px;
+    background-color: rgb(170, 8, 8);
+    border: none;
+}
+
+.ctrl-btn {
+    display: flex;
+    margin-left: 10px;
+}
+
+.playing {
+    /* location */
+    display: inline-block;
+    position: relative;
+    /* aspect */
+    width: 30px;
+    height: 50px;
+    border: 3px solid rgb(179, 228, 4);
+}
+
+/*# sourceMappingURL=/style.c61ab535.css.map */
