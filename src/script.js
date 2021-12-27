@@ -57,7 +57,7 @@ let keyComponent = {
         @click="toggleActive"></div>\
         </div>\
     ',
-    
+
     props: {
         state: {
             default: false,
