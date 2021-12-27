@@ -4,6 +4,7 @@
  * 3. manage shapes
  */
 
+
 Vue.config.devtools = true
 
 let controllerComponent = {
@@ -51,12 +52,12 @@ let controllerComponent = {
 let keyComponent = {
 
     template:'\
-        <div class="keyback">\
+        <div>\
         <div class="key" :class="{active : state}" \
         @click="toggleActive"></div>\
         </div>\
     ',
-
+    
     props: {
         state: {
             default: false,
@@ -65,12 +66,22 @@ let keyComponent = {
         isPlaying: {
             default: false,
             required: true,
-        }
+        },
     },
 
     methods: {
         toggleActive() {
             this.state = !this.state
+            if(this.state){
+                this.$emit('playSound')
+            }
+        }
+    },
+    watch: {
+        'isPlaying': function(){
+            if(this.state && this.isPlaying){
+                this.$emit('playSound')
+            }
         }
     }
 }
@@ -79,8 +90,8 @@ let layerComponent = {
 
     template:'\
         <div>\
-            <key-component v-for="k in num_beats"\
-            :class="{playing : k === isPlaying + 1}"></key-component>\
+            <key-component v-for="k in num_beats" @playSound="playNote"\
+            class="keyback" :class="{playing :k === isPlaying + 1}"></key-component>\
             <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
         </div>\
     ',
@@ -114,6 +125,9 @@ let layerComponent = {
         play() {
             this.stop();
             this.my_clock = setInterval(this.next,this.my_beat_duration)
+        },
+        playNote(){
+            synth.triggerAttackRelease("A4","16n")
         },
     }
 };
@@ -205,3 +219,5 @@ var app = new Vue({
         'sequencer-component': sequencerComponent
     }
 })
+
+var synth = new Tone.PolySynth().toDestination();
