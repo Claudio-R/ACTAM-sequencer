@@ -4,7 +4,7 @@
     position: relative;
     
     /*size*/
-    width: 80%;
+    width: 694px;
     height: 50%;
 
     /*aspect*/
@@ -67,13 +67,15 @@
 
 .keyback {
     /* location */
-    display: inline-block;
     position: relative;
+    display: inline-block;
     /* aspect */
-    width: 30px;
-    height: 50px;
-    background-color: rgb(152, 197, 101);
-    border: 3px solid rgb(111, 114, 96);
+    width: calc(var(--keyWidth) - 6px); /* - 2 volte il border*/
+    height: 56px;
+    margin: var(--margin);
+    background-color: #c0a630;
+    border: 3px solid #0000004d;
+    border-radius: 8px;
 }
 
 .active {
@@ -81,6 +83,7 @@
     height: 14px;
     background-color: rgb(170, 8, 8);
     border: none;
+
 }
 
 .ctrl-btn {
