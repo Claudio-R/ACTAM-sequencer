@@ -184,7 +184,7 @@
             synth.triggerAttackRelease("A4","16n")
         },
         playInst2(){
-            synth.triggerAttackRelease("C4","16n")
+            synth.triggerAttackRelease("D4","16n")
         },
     }
 };
@@ -222,7 +222,7 @@ let sequencerComponent = {
     
     data(){
         return {
-            bpm: 60,
+            bpm: 120,
             playing: false,
             nextId: 2,
             layers: [
