@@ -15,6 +15,11 @@
     background-color: rgb(19, 109, 116);
 }
 
+:root{
+--inst1: rgb(170, 8, 8);
+--inst2: rgb(42, 11, 218);
+}
+
 .controller-container {
     background-color: beige;
     border-radius: 10px;
@@ -78,12 +83,49 @@
     border-radius: 8px;
 }
 
-.active {
+.active1 {
     width: 14px;
     height: 14px;
-    background-color: rgb(170, 8, 8);
+    background-color: var(--inst1);
     border: none;
 
+}
+.active2 {
+    width: 14px;
+    height: 14px;
+    background-color: var(--inst2);
+    border: none;
+
+}
+
+.active12{
+    display: inline-block;
+    isolation: isolate;
+    width: 21px;
+    height: 14px;
+    vertical-align: middle;
+}
+
+.active12::before,
+.active12::after {
+    border-radius: 100%;
+    content: "";
+    display: inline-block;
+    height: 14px;
+    position: absolute;
+    width: 14px;
+}
+
+.active12::before{
+    background-color: var(--inst1);
+    left: 0;
+    top: 0;
+}
+
+.active12::after {
+    background-color: var(--inst2);
+    right: 0;
+    top: 0;
 }
 
 .ctrl-btn {

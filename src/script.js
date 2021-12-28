@@ -13,6 +13,8 @@
              <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
              <button class="btn-1" @click="playAll">Play all</button>\
              <button class="btn-1" @click="stopAll">Stop</button>\
+             <button class="btn-1" @click="inst1Selection">inst1</button>\
+             <button class="btn-1" @click="inst2Selection">inst2</button>\
          </div>\
      ',
      data() {
@@ -45,6 +47,14 @@
          stopAll() {
              this.$emit('stopAllEvent')
          },
+         inst1Selection() {
+            inst_id=1
+            this.$emit('instSelectionEvent', inst_id)
+        },
+        inst2Selection() {
+            inst_id=2
+            this.$emit('instSelectionEvent',inst_id)
+        },
      }
  };
  
@@ -52,16 +62,22 @@
  
      template:'\
          <div>\
-         <div class="key" :class="{active : state}" \
-         @click="toggleActive"></div>\
+            <div class="key"\
+            :class="{active1 : state1, active2 : state2, active12 : state1 && state2}"\
+            @click="toggleActive">\
+            </div>\
          </div>\
      ',
  
      props: {
-         state: {
+         state1: {
              default: false,
              required: true,
          },
+         state2: {
+            default: false,
+            required: true,
+        },
          isPlaying: {
              type: Number,
          },
@@ -70,22 +86,34 @@
          },
          myLayerId: {
              type: Number,
+         },
+         inst_selection:{
+             type: Number,
          }
      },
  
      methods: {
          toggleActive() {
-             this.state = !this.state
-             if(this.state){
-                 this.$emit('playSound')
+             switch(this.inst_selection){
+                case 1: this.state1 = !this.state1
+                        if(this.state1){
+                        this.$emit('playSound1Event')
+                        }break;
+                case 2: this.state2 = !this.state2
+                        if(this.state2){
+                        this.$emit('playSound2Event')
+                        }break; 
              }
          }
      },
      watch: {
          'isPlaying': function(){
-             if(this.state && this.isPlaying == this.id){
-                 this.$emit('playSound')
+             if(this.state1 && this.isPlaying == this.id){
+                 this.$emit('playSound1Event')
              }
+             if(this.state2 && this.isPlaying == this.id){
+                this.$emit('playSound2Event')
+            }
          }
      }
  }
@@ -101,7 +129,9 @@
                 :numKeys="num_beats"\
                 :id="k-1"\
                 :isPlaying="isPlaying"\
-                @playSound="playNote">\
+                :inst_selection="inst_id"\
+                @playSound1Event="playInst1"\
+                @playSound2Event="playInst2">\
             </key-component>\
             <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
         </div>\
@@ -112,13 +142,14 @@
      },
      
   
-    props : ['layerId','num_beats','total_duration','system_playing'],
+    props : ['layerId','num_beats','total_duration','system_playing','inst_id'],
     
     data() {
         return {
             isPlaying: 0,
             my_clock: '',
             margin: 5,
+            inst_selection: 1,
         }
     },
     
@@ -149,8 +180,11 @@
             this.stop();
             this.my_clock = setInterval(this.next,this.my_beat_duration)
         },
-        playNote(){
+        playInst1(){
             synth.triggerAttackRelease("A4","16n")
+        },
+        playInst2(){
+            synth.triggerAttackRelease("C4","16n")
         },
     }
 };
@@ -167,6 +201,7 @@ let sequencerComponent = {
                 @bpmEvent="updateBPM"\
                 @playAllEvent="playAll"\
                 @stopAllEvent="stopAll"\
+                @instSelectionEvent="instSelection"\
             ></controller-component>\
             <layer-component class="layer" v-for="(layer,index) in layers"\
                 ref="layers_refs"\
@@ -174,6 +209,7 @@ let sequencerComponent = {
                 :num_beats="layer.num_beats"\
                 :total_duration="bar_duration"\
                 :system_playing="playing"\
+                :inst_id="inst_id"\
                 @remove="layers.splice(index,1)">\
             </layer-component>\
         </div>\
@@ -198,7 +234,8 @@ let sequencerComponent = {
                     id: 1,
                     num_beats: 2
                 },
-            ]
+            ],
+            inst_id: 1,
         }
     },
 
@@ -242,6 +279,9 @@ let sequencerComponent = {
                 this.$refs.layers_refs[idx].stop()
             }
             this.playing = false
+        },
+        instSelection(inst_id) {
+            this.inst_id=inst_id
         },
     }
 }
