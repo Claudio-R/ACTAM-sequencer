@@ -60,7 +60,7 @@ let keyComponent = {
     template: '\
          <div>\
             <div class="key"\
-            :class="{active : state1 || state2 || state3, activeB : state1 && state2 || state1 && state3 || state2 && state3}"\
+            :class="{active : state1 || state2 || state3}"\
             @click="toggleActive"\
             :style="cssVars">\
             </div>\
