@@ -4,6 +4,8 @@
  * 3. manage shapes --UPDATE riusciamo a bindare una width diversa per ogni layer
  */
 
+
+
  Vue.config.devtools = true
 
  let controllerComponent = {
@@ -15,6 +17,7 @@
              <button class="btn-1" @click="stopAll">Stop</button>\
              <button class="btn-1" @click="inst1Selection">inst1</button>\
              <button class="btn-1" @click="inst2Selection">inst2</button>\
+             <button class="btn-1" @click="inst3Selection">inst3</button>\
          </div>\
      ',
      data() {
@@ -55,6 +58,10 @@
             inst_id=2
             this.$emit('instSelectionEvent',inst_id)
         },
+        inst3Selection() {
+            inst_id=3
+            this.$emit('instSelectionEvent',inst_id)
+        },
      }
  };
  
@@ -63,18 +70,23 @@
      template:'\
          <div>\
             <div class="key"\
-            :class="{active1 : state1, active2 : state2, active12 : state1 && state2}"\
-            @click="toggleActive">\
+            :class="{active : state1 || state2 || state3}"\
+            @click="toggleActive"\
+            :style="cssVars">\
             </div>\
          </div>\
      ',
- 
+    
      props: {
          state1: {
              default: false,
              required: true,
          },
          state2: {
+            default: false,
+            required: true,
+        },
+        state3: {
             default: false,
             required: true,
         },
@@ -89,7 +101,15 @@
          },
          inst_selection:{
              type: Number,
-         }
+         },
+         last_color:{
+             type: Number,
+             default: 0,
+         },
+         very_last_color:{
+            type: Number,
+            default: 0,
+        }
      },
  
      methods: {
@@ -103,9 +123,14 @@
                         if(this.state2){
                         this.$emit('playSound2Event')
                         }break; 
+                case 3: this.state3 = !this.state3
+                        if(this.state3){
+                        this.$emit('playSound3Event')
+                }break;
              }
          }
      },
+
      watch: {
          'isPlaying': function(){
              if(this.state1 && this.isPlaying == this.id){
@@ -114,7 +139,68 @@
              if(this.state2 && this.isPlaying == this.id){
                 this.$emit('playSound2Event')
             }
+            if(this.state3 && this.isPlaying == this.id){
+                this.$emit('playSound3Event')
+            }
          }
+     },
+
+     computed: {
+        cssVars() {
+            CSScolors = ['rgb(170, 8, 8)','rgb(42, 11, 218)','rgb(255, 217, 0)'] /* Modifica qui i colori degli strumenti*/
+            if(this.state1 && this.state2 &&this.state3){
+                return {
+                    '--inst_color': CSScolors[3-this.very_last_color-this.last_color],
+                    '--shadow': '-7px 0 '+CSScolors[this.very_last_color]+',-14px 0 '+CSScolors[this.last_color],
+                    '--inst_shift': '7px',
+                    }
+                }
+            if(this.state1 && this.state2){
+                this.very_last_color = Math.abs(this.last_color-1)
+                return {
+                    '--inst_color': CSScolors[this.very_last_color],
+                    '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                    '--inst_shift': '3.5px',
+                    }
+                }
+            if(this.state2 && this.state3){
+                this.very_last_color = Math.abs(this.last_color-3)
+                return {
+                    '--inst_color': CSScolors[this.very_last_color],
+                    '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                    '--inst_shift': '3.5px',
+                    }
+                }
+            if(this.state1 && this.state3){
+                this.very_last_color = Math.abs(this.last_color-2)
+                return {
+                    '--inst_color': CSScolors[this.very_last_color],
+                    '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                    '--inst_shift': '3.5px',
+                    }
+                }
+            if(this.state1){
+                this.last_color = 0
+                return {
+                    '--inst_color': CSScolors[0],
+                    '--inst_shift': '0px',
+                    }
+                }
+            else if(this.state2){
+                this.last_color = 1
+                return {
+                    '--inst_color': CSScolors[1],
+                    '--inst_shift': '0px',
+                    }
+                }
+            else if(this.state3){
+                this.last_color = 2
+                return {
+                    '--inst_color': CSScolors[2],
+                    '--inst_shift': '0px',
+                    }
+                }
+        }
      }
  }
  
@@ -131,7 +217,8 @@
                 :isPlaying="isPlaying"\
                 :inst_selection="inst_id"\
                 @playSound1Event="playInst1"\
-                @playSound2Event="playInst2">\
+                @playSound2Event="playInst2"\
+                @playSound3Event="playInst3">\
             </key-component>\
             <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
         </div>\
@@ -181,10 +268,13 @@
             this.my_clock = setInterval(this.next,this.my_beat_duration)
         },
         playInst1(){
-            synth.triggerAttackRelease("A4","16n")
+            synth1.triggerAttackRelease("A4","16n")
         },
         playInst2(){
-            synth.triggerAttackRelease("D4","16n")
+            synth2.triggerAttackRelease("D4","16n")
+        },
+        playInst3(){
+            synth3.triggerAttack("E4");
         },
     }
 };
@@ -293,4 +383,52 @@ var app = new Vue({
     }
 })
 
-var synth = new Tone.PolySynth().toDestination();
+var synth1 = new Tone.PolySynth().toDestination();
+var synth2 = new Tone.DuoSynth({
+    vibratoAmount  : 0.5 ,
+    vibratoRate  : 5 ,
+    harmonicity  : 1.5 ,
+    voice0  : {
+    volume  : -10 ,
+    portamento  : 0 ,
+    oscillator  : {
+    type  : "sine"
+    }  ,
+    filterEnvelope  : {
+    attack  : 0.01 ,
+    decay  : 0 ,
+    sustain  : 1 ,
+    release  : 0.5
+    }  ,
+    envelope  : {
+    attack  : 0.01 ,
+    decay  : 0 ,
+    sustain  : 1 ,
+    release  : 0.5
+    }
+    }  ,
+    voice1  : {
+    volume  : -10 ,
+    portamento  : 0 ,
+    oscillator  : {
+    type  : "sine"
+    }  ,
+    filterEnvelope  : {
+    attack  : 0.01 ,
+    decay  : 0 ,
+    sustain  : 1 ,
+    release  : 0.5
+    }  ,
+    envelope  : {
+    attack  : 0.01 ,
+    decay  : 0 ,
+    sustain  : 1 ,
+    release  : 0.5
+    }
+    }
+    }).toDestination();
+var synth3 = new Tone.PluckSynth({
+    attackNoise  : 1 ,
+    dampening  : 8000 ,
+    resonance  : 0.9
+    }).toDestination();
