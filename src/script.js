@@ -2,230 +2,253 @@
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
  * 3. manage shapes --UPDATE riusciamo a bindare una width diversa per ogni layer
- */
+*/
 
+Vue.config.devtools = true
 
+let controllerComponent = {
+    template:'\
+       <div class="controller">\
+            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
+            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
+            <button class="btn-1" @click="playAll">Play all</button>\
+            <button class="btn-1" @click="stopAll">Stop</button>\
+            <button class="btn-1" @click="inst1Selection">inst1</button>\
+            <button class="btn-1" @click="inst2Selection">inst2</button>\
+            <button class="btn-1" @click="inst3Selection">inst3</button>\
+        </div>\
+    ',
+    data() {
+        return {
+            newInput: '',
+            bpm_value: '',
+        }
 
- Vue.config.devtools = true
+    },
 
- let controllerComponent = {
-     template:'\
-         <div class="controller-container">\
-             <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-             <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-             <button class="btn-1" @click="playAll">Play all</button>\
-             <button class="btn-1" @click="stopAll">Stop</button>\
-             <button class="btn-1" @click="inst1Selection">inst1</button>\
-             <button class="btn-1" @click="inst2Selection">inst2</button>\
-             <button class="btn-1" @click="inst3Selection">inst3</button>\
-         </div>\
-     ',
-     data() {
-         return {
-             newInput: '',
-             bpm_value: '',
-         }
- 
-     },
- 
-     computed: {
-         newInput_toNumber() {
-             return this.newInput ? parseInt(this.newInput) : null
-         },
-         bpm_value_toNumber() {
-             return this.bpm_value ? parseInt(this.bpm_value) : null
-         }
-     },
- 
-     methods: {
-         addLayer() {
-             this.$emit('newLayerEvent', this.newInput_toNumber)
-         },
-         updateBPM() {
-             this.$emit('bpmEvent', this.bpm_value_toNumber)
-         },
-         playAll() {
-             this.$emit('playAllEvent')
-         },
-         stopAll() {
-             this.$emit('stopAllEvent')
-         },
-         inst1Selection() {
-            inst_id=1
-            this.$emit('instSelectionEvent', inst_id)
+    computed: {
+        newInput_toNumber() {
+            return this.newInput ? parseInt(this.newInput) : null
         },
-        inst2Selection() {
-            inst_id=2
-            this.$emit('instSelectionEvent',inst_id)
+        bpm_value_toNumber() {
+            return this.bpm_value ? parseInt(this.bpm_value) : null
+        }
+    },
+
+    methods: {
+        addLayer() {
+            this.$emit('newLayerEvent', this.newInput_toNumber)
+            this.newInput = ''
         },
-        inst3Selection() {
-            inst_id=3
-            this.$emit('instSelectionEvent',inst_id)
+        updateBPM() {
+            this.$emit('bpmEvent', this.bpm_value_toNumber)
+            this.bpm_value = '' 
         },
-     }
- };
- 
- let keyComponent = {
- 
-     template:'\
-         <div>\
-            <div class="key"\
-            :class="{active : state1 || state2 || state3}"\
-            @click="toggleActive"\
-            :style="cssVars">\
-            </div>\
-         </div>\
-     ',
-    
-     props: {
-         state1: {
-             default: false,
-             required: true,
-         },
-         state2: {
+        playAll() {
+            this.$emit('playAllEvent')
+        },
+        stopAll() {
+            this.$emit('stopAllEvent')
+        },
+        inst1Selection() {
+           inst_id=1
+           this.$emit('instSelectionEvent', inst_id)
+       },
+       inst2Selection() {
+           inst_id=2
+           this.$emit('instSelectionEvent',inst_id)
+       },
+       inst3Selection() {
+           inst_id=3
+           this.$emit('instSelectionEvent',inst_id)
+       },
+    }
+};
+
+let keyComponent = {
+
+    template:'\
+        <div>\
+           <div class="key"\
+           :class="{active : state1 || state2 || state3}"\
+           @click="toggleActive"\
+           :style="cssVars">\
+           </div>\
+        </div>\
+    ',
+   
+    props: {
+        state1: {
             default: false,
             required: true,
         },
-        state3: {
-            default: false,
-            required: true,
+        state2: {
+           default: false,
+           required: true,
+       },
+       state3: {
+           default: false,
+           required: true,
+       },
+        isPlaying: {
+            type: Number,
         },
-         isPlaying: {
-             type: Number,
-         },
-         id: {
-             type: Number,
-         },
-         myLayerId: {
-             type: Number,
-         },
-         inst_selection:{
-             type: Number,
-         },
-         last_color:{
-             type: Number,
-             default: 0,
-         },
-         very_last_color:{
+        id: {
+            type: Number,
+        },
+        myLayerId: {
+            type: Number,
+        },
+        inst_selection:{
+            type: Number,
+        },
+        last_color:{
             type: Number,
             default: 0,
-        }
-     },
- 
-     methods: {
-         toggleActive() {
-             switch(this.inst_selection){
-                case 1: this.state1 = !this.state1
-                        if(this.state1){
-                        this.$emit('playSound1Event')
-                        }break;
-                case 2: this.state2 = !this.state2
-                        if(this.state2){
-                        this.$emit('playSound2Event')
-                        }break; 
-                case 3: this.state3 = !this.state3
-                        if(this.state3){
-                        this.$emit('playSound3Event')
-                }break;
-             }
-         }
-     },
+        },
+        very_last_color:{
+           type: Number,
+           default: 0,
+       }
+    },
 
-     watch: {
-         'isPlaying': function(){
-             if(this.state1 && this.isPlaying == this.id){
-                 this.$emit('playSound1Event')
-             }
-             if(this.state2 && this.isPlaying == this.id){
-                this.$emit('playSound2Event')
+    methods: {
+        toggleActive() {
+            switch(this.inst_selection){
+               case 1: this.state1 = !this.state1
+                       if(this.state1){
+                       this.$emit('playSound1Event')
+                       }break;
+               case 2: this.state2 = !this.state2
+                       if(this.state2){
+                       this.$emit('playSound2Event')
+                       }break; 
+               case 3: this.state3 = !this.state3
+                       if(this.state3){
+                       this.$emit('playSound3Event')
+               }break;
             }
-            if(this.state3 && this.isPlaying == this.id){
-                this.$emit('playSound3Event')
-            }
-         }
-     },
-
-     computed: {
-        cssVars() {
-            CSScolors = ['rgb(170, 8, 8)','rgb(42, 11, 218)','rgb(255, 217, 0)'] /* Modifica qui i colori degli strumenti*/
-            if(this.state1 && this.state2 &&this.state3){
-                return {
-                    '--inst_color': CSScolors[3-this.very_last_color-this.last_color],
-                    '--shadow': '-7px 0 '+CSScolors[this.very_last_color]+',-14px 0 '+CSScolors[this.last_color],
-                    '--inst_shift': '7px',
-                    }
-                }
-            if(this.state1 && this.state2){
-                this.very_last_color = Math.abs(this.last_color-1)
-                return {
-                    '--inst_color': CSScolors[this.very_last_color],
-                    '--shadow': '-7px 0 '+CSScolors[this.last_color],
-                    '--inst_shift': '3.5px',
-                    }
-                }
-            if(this.state2 && this.state3){
-                this.very_last_color = Math.abs(this.last_color-3)
-                return {
-                    '--inst_color': CSScolors[this.very_last_color],
-                    '--shadow': '-7px 0 '+CSScolors[this.last_color],
-                    '--inst_shift': '3.5px',
-                    }
-                }
-            if(this.state1 && this.state3){
-                this.very_last_color = Math.abs(this.last_color-2)
-                return {
-                    '--inst_color': CSScolors[this.very_last_color],
-                    '--shadow': '-7px 0 '+CSScolors[this.last_color],
-                    '--inst_shift': '3.5px',
-                    }
-                }
-            if(this.state1){
-                this.last_color = 0
-                return {
-                    '--inst_color': CSScolors[0],
-                    '--inst_shift': '0px',
-                    }
-                }
-            else if(this.state2){
-                this.last_color = 1
-                return {
-                    '--inst_color': CSScolors[1],
-                    '--inst_shift': '0px',
-                    }
-                }
-            else if(this.state3){
-                this.last_color = 2
-                return {
-                    '--inst_color': CSScolors[2],
-                    '--inst_shift': '0px',
-                    }
-                }
         }
-     }
- }
- 
- let layerComponent = {
+    },
+    watch: {
+        'isPlaying': function(){
+            if(this.state1 && this.isPlaying == this.id){
+                this.$emit('playSound1Event')
+            }
+            if(this.state2 && this.isPlaying == this.id){
+               this.$emit('playSound2Event')
+           }
+           if(this.state3 && this.isPlaying == this.id){
+               this.$emit('playSound3Event')
+           }
+        }
+    },
+    computed: {
+       cssVars() {
+           CSScolors = ['rgb(170, 8, 8)','rgb(42, 11, 218)','rgb(255, 217, 0)'] /* Modifica qui i colori degli strumenti*/
+           if(this.state1 && this.state2 &&this.state3){
+               return {
+                   '--inst_color': CSScolors[3-this.very_last_color-this.last_color],
+                   '--shadow': '-7px 0 '+CSScolors[this.very_last_color]+',-14px 0 '+CSScolors[this.last_color],
+                   '--inst_shift': '7px',
+                   }
+               }
+           if(this.state1 && this.state2){
+               this.very_last_color = Math.abs(this.last_color-1)
+               return {
+                   '--inst_color': CSScolors[this.very_last_color],
+                   '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                   '--inst_shift': '3.5px',
+                   }
+               }
+           if(this.state2 && this.state3){
+               this.very_last_color = Math.abs(this.last_color-3)
+               return {
+                   '--inst_color': CSScolors[this.very_last_color],
+                   '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                   '--inst_shift': '3.5px',
+                   }
+               }
+           if(this.state1 && this.state3){
+               this.very_last_color = Math.abs(this.last_color-2)
+               return {
+                   '--inst_color': CSScolors[this.very_last_color],
+                   '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                   '--inst_shift': '3.5px',
+                   }
+               }
+           if(this.state1){
+               this.last_color = 0
+               return {
+                   '--inst_color': CSScolors[0],
+                   '--inst_shift': '0px',
+                   }
+               }
+           else if(this.state2){
+               this.last_color = 1
+               return {
+                   '--inst_color': CSScolors[1],
+                   '--inst_shift': '0px',
+                   }
+               }
+           else if(this.state3){
+               this.last_color = 2
+               return {
+                   '--inst_color': CSScolors[2],
+                   '--inst_shift': '0px',
+                   }
+               }
+       }
+    }
+}
+
+let scaleSelectorComponent = {
+
+    template: '\
+    <div id="scale-selector">\
+        <a href="#">Select scale</a>\
+        <ul>\
+            <li><a href="#">Scale 1</a></li>\
+            <li><a href="#">Scale 2</a></li>\
+            <li><a href="#">Scale 3</a></li>\
+            <li><a href="#">Scale 4</a></li>\
+            <li><a href="#">Scale 5</a></li>\
+        </ul>\
+    </div>\
+'
+
+};
+
+let layerComponent = {
  
      template:'\
-        <div>\
-            <key-component v-for="k in num_beats"\
-                class="keyback" :style="cssVars"\
-                :class="{playing : k === isPlaying + 1}"\
-                :myLayerId="layerId"\
-                :numKeys="num_beats"\
-                :id="k-1"\
-                :isPlaying="isPlaying"\
-                :inst_selection="inst_id"\
-                @playSound1Event="playInst1"\
-                @playSound2Event="playInst2"\
-                @playSound3Event="playInst3">\
-            </key-component>\
-            <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
+        <div class="layer">\
+            <div class="keyboard">\
+                <key-component v-for="k in num_beats"\
+                    class="keyback" :style="cssVars"\
+                    :class="{playing : k === isPlaying + 1}"\
+                    :myLayerId="layerId"\
+                    :numKeys="num_beats"\
+                    :id="k-1"\
+                    :isPlaying="isPlaying"\
+                    :inst_selection="inst_id"\
+                    @playSound1Event="playInst1"\
+                    @playSound2Event="playInst2"\
+                    @playSound3Event="playInst3">\
+                </key-component>\
+            </div>\
+            <div class="layer-controller">\
+                <button id="remove-btn" @click="$emit(\'remove\')">Remove layer</button>\
+                <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
+                <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
+                <scale-selector-component></scale-selector-component>\
+            </div>\
         </div>\
      ',
      
      components: {
-         'key-component' : keyComponent
+         'key-component' : keyComponent,
+         'scale-selector-component' : scaleSelectorComponent,
      },
      
   
@@ -245,9 +268,9 @@
             return this.total_duration/this.num_beats;
         },
         layer_width() { 
-            return document.getElementById('app').offsetWidth - 24
-        }, /* - layer margin né app border */
-        //layer_width() { return this.$el.offsetWidth}, /* non funziona così */
+            //return document.getElementById('app').offsetWidth - 24
+            return 500
+        }, /* 698 - layer margin né app border = 674 */
         cssVars() {
             return {
                 '--margin': this.margin + 'px',
@@ -284,7 +307,8 @@ let sequencerComponent = {
     template: '\
         <div>\
             <div class="view-box">\
-                <p id="bpm-viewer">BPM: {{bpm}}</p>\
+                <p class="viewer">BPM: {{bpm}}</p>\
+                <p class="viewer">Selected instrument: {{inst_id}}</p>\
             </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
@@ -293,15 +317,19 @@ let sequencerComponent = {
                 @stopAllEvent="stopAll"\
                 @instSelectionEvent="instSelection"\
             ></controller-component>\
-            <layer-component class="layer" v-for="(layer,index) in layers"\
-                ref="layers_refs"\
-                :layerId="layer.id"\
-                :num_beats="layer.num_beats"\
-                :total_duration="bar_duration"\
-                :system_playing="playing"\
-                :inst_id="inst_id"\
-                @remove="layers.splice(index,1)">\
-            </layer-component>\
+            <div id="layers-container">\
+                <layer-component v-for="(layer,index) in layers"\
+                    ref="layers_refs"\
+                    :layerId="layer.id"\
+                    :num_beats="layer.num_beats"\
+                    :total_duration="bar_duration"\
+                    :system_playing="playing"\
+                    :inst_id="inst_id"\
+                    @remove="layers.splice(index,1)"\
+                    @addKeyEvent="layer.num_beats++"\
+                    @removeKeyEvent="layer.num_beats--">\
+                </layer-component>\
+            </div>\
         </div>\
     ',
     

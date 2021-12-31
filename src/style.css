@@ -4,32 +4,45 @@
     position: relative;
     
     /*size*/
-    width: 694px;
+    width: 720px;
     height: 50%;
-
+    
     /*aspect*/
     border: 2px solid rgb(199, 202, 0);
     border-radius: 5px;
-
+    
     /*color*/
     background-color: rgb(19, 109, 116);
 }
 
-.controller-container {
-    background-color: beige;
-    border-radius: 10px;
-    margin: 10px;
-    height: 50px;
-}
-
+/******************************************* TOP BOX *******************************************/
 .view-box {
-    background-color: beige;
+    display: inline-flex;
+    width: auto;
+    height: auto;
     border-radius: 10px;
-    margin-top: 15px;
+    margin-top: 10px;
+    margin-left: 10px;
+    padding: 2px;
+    background-color: beige;
+}
+.viewer{
     margin: 10px;
-    height: 30px;
+    padding: 2px;
+    width: auto;
+    height: 80%;
+    border: 2px solid rgb(216, 216, 178);
+    background-color: bisque;
 }
 
+/******************************************* CONTROL BAR *******************************************/
+.controller {
+    width: auto;
+    background-color: beige;
+    border-radius: 10px;
+    margin: 10px;
+    height: auto;
+}
 .text-input {
     margin: 5px;
 }
@@ -38,17 +51,48 @@
     margin: 5px;
 }
 
-#bpm-viewer{
+#layers-container {
+    margin: 10px;
+    background-color: #575757;
+}
+
+/******************************************* LAYER *******************************************/
+.layer{
+    width: 680px;
+    display: inline-flex;
+    height: auto;
+    /*height: calc(62px + 10px + 30px);*/
     margin: 10px;
 }
 
-.layer {
-    margin: 10px;
+.keyboard {
+    width: 500px;
+    height: auto;
     border-radius: 10px;
-    height: 115px;
     background-color: rgb(199, 202, 0);
 }
 
+.keyback {
+    /* location */
+    position: relative;
+    display: inline-block;
+    /* aspect */
+    width: calc(var(--keyWidth) - 6px); /* - 2 volte il border*/
+    height: 56px;
+    margin: var(--margin);
+    background-color: #c0a630;
+    border: 3px solid #0000004d;
+    border-radius: 8px;
+}
+.playing {
+    /* location */
+    display: inline-block;
+    position: relative;
+    /* aspect */
+    border: 3px solid rgb(179, 228, 4);
+  }
+
+  /* bottone */
 .key {
     /* location */
     position: absolute;
@@ -65,19 +109,6 @@
 
 }
 
-.keyback {
-    /* location */
-    position: relative;
-    display: inline-block;
-    /* aspect */
-    width: calc(var(--keyWidth) - 6px); /* - 2 volte il border*/
-    height: 56px;
-    margin: var(--margin);
-    background-color: #c0a630;
-    border: 3px solid #0000004d;
-    border-radius: 8px;
-}
-
 .active {
     background-color: var(--inst_color);
     width: 14px;
@@ -87,17 +118,61 @@
     border: none;
     position: relative;
     left: calc(var(--keyWidth)/2 - 3px + var(--inst_shift));
-  }
-
-.ctrl-btn {
-    display: flex;
-    margin-left: 10px;
 }
 
-.playing {
-    /* location */
-    display: inline-block;
-    position: relative;
-    /* aspect */
-    border: 3px solid rgb(179, 228, 4);
+/******************************************* LAYER CONTROLLER *******************************************/
+.layer-controller{
+    margin-left: 10px;
+    width: 170px;
+    background-color: beige;
+}
+
+#remove-btn {
+    margin: 5px;
+}
+
+/******************************************* SCALE SELECTOR *******************************************/
+#scale-selector {
+    
+    margin: 10px;
+    padding: 0;
+    background-color: bisque;
+    border: 2px solid rgb(19, 109, 116);
+}
+
+#scale-selector ul
+{
+margin: 0;
+padding: 0;
+list-style-type: none;
+}
+
+#scale-selector a
+{
+display: block;
+padding: 5px;
+color: #000;
+text-decoration: none;
+}
+
+#scale-selector a:hover
+{
+background-color: #c0a630;
+color: #FFFFFF;
+text-decoration: none;
+}
+
+#scale-selector ul
+{ display: none }
+
+#scale-selector:hover ul
+{
+display: block;
+position: absolute;
+z-index:1;
+width:150px;
+padding: 0;
+margin: 0 0 0 -1px;
+border:1px solid black;
+background: white;
 }
