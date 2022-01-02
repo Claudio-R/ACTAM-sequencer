@@ -35,7 +35,7 @@ let instSelComponent = {
     computed: {
         cssVars() {
             activeCSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)']
-            passiveCSScolors = ['rgb(90, 0, 0)','rgb(0, 0, 90)','rgb(0, 90, 0)']
+            passiveCSScolors = ['rgb(120, 0, 0)','rgb(0, 0, 120)','rgb(0, 120, 0)']
             if(this.id==this.selected_inst){
             return{
                 '--inst_sel_color': activeCSScolors[this.id-1],
