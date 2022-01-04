@@ -96,9 +96,6 @@ let keyComponent = {
         id: {
             type: Number,
         },
-        myLayerId: {
-            type: Number,
-        },
         inst_selection:{
             type: Number,
         },
@@ -249,7 +246,6 @@ let layerComponent = {
                 <key-component v-for="k in num_beats"\
                     class="keyback" :style="cssVars"\
                     :class="{playing : k === isPlaying + 1}"\
-                    :myLayerId="layerId"\
                     :numKeys="num_beats"\
                     :id="k-1"\
                     :isPlaying="isPlaying"\
@@ -282,7 +278,7 @@ let layerComponent = {
      },
      
   
-    props : ['layerId','num_beats','total_duration','system_playing','inst_id'],
+    props : ['num_beats','total_duration','system_playing','inst_id'],
     
     data() {
         return {
@@ -360,7 +356,7 @@ let sequencerComponent = {
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
                     ref="layers_refs"\
-                    :layerId="layer.id"\
+                    :key="layer.id"\
                     :num_beats="layer.num_beats"\
                     :total_duration="bar_duration"\
                     :system_playing="playing"\
