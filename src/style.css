@@ -77,7 +77,6 @@
     width: 680px;
     display: inline-flex;
     height: auto;
-    /*height: calc(62px + 10px + 30px);*/
     margin: 10px;
 }
 
@@ -90,11 +89,13 @@
 
 .keyback {
     /* location */
-    position: relative;
     display: inline-block;
+    position: relative;
+    /*top: 50%;*/
+    transform: translate(0, 15px);
     /* aspect */
     width: calc(var(--keyWidth) - 6px); /* - 2 volte il border*/
-    height: 56px;
+    height: 80px;
     margin: var(--margin);
     background-color: #c0a630;
     border: 3px solid #0000004d;
@@ -143,12 +144,20 @@
     background-color: beige;
 }
 
-#remove-btn {
-    margin: 5px;
+#buttons{
+    display: inline-flex;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 0;
 }
 
-/******************************************* SCALE SELECTOR *******************************************/
-#scale-selector {
+#addKey-btn{
+    margin-left: 7px;
+}
+
+/******************************************* SCALE and KEY SELECTOR *******************************************/
+.selector {
     
     margin: 10px;
     padding: 0;
@@ -156,14 +165,14 @@
     border: 2px solid rgb(19, 109, 116);
 }
 
-#scale-selector ul
+.selector ul
 {
 margin: 0;
 padding: 0;
 list-style-type: none;
 }
 
-#scale-selector a
+.selector a
 {
 display: block;
 padding: 5px;
@@ -171,17 +180,17 @@ color: #000;
 text-decoration: none;
 }
 
-#scale-selector a:hover
+.selector a:hover
 {
 background-color: #c0a630;
 color: #FFFFFF;
 text-decoration: none;
 }
 
-#scale-selector ul
+.selector ul
 { display: none }
 
-#scale-selector:hover ul
+.selector:hover ul
 {
 display: block;
 position: absolute;

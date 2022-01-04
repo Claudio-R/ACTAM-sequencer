@@ -1,7 +1,7 @@
 /** TODO
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
- * 3. manage shapes --UPDATE riusciamo a bindare una width diversa per ogni layer
+ * 4. provare a gestire key e scale con v-model
 */
 
 Vue.config.devtools = true
@@ -147,9 +147,6 @@ let keyComponent = {
         id: {
             type: Number,
         },
-        myLayerId: {
-            type: Number,
-        },
         inst_selection:{
             type: Number,
         },
@@ -256,18 +253,40 @@ let keyComponent = {
 let scaleSelectorComponent = {
 
     template: '\
-    <div id="scale-selector">\
-        <a href="#">Select scale</a>\
+    <div id="scale-selector" class="selector">\
+        <a href="#">Select Scale</a>\
         <ul>\
-            <li><a href="#">Scale 1</a></li>\
-            <li><a href="#">Scale 2</a></li>\
-            <li><a href="#">Scale 3</a></li>\
-            <li><a href="#">Scale 4</a></li>\
-            <li><a href="#">Scale 5</a></li>\
+            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 1)">Scale 1</a></li>\
+            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 2)">Scale 2</a></li>\
+            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 3)">Scale 3</a></li>\
+            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 4)">Scale 4</a></li>\
+            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 5)">Scale 5</a></li>\
         </ul>\
     </div>\
 '
+};
 
+let keySelectorComponent = {
+
+    template: '\
+    <div id="key-selector" class="selector">\
+        <a href="#">Select Key</a>\
+        <ul>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 1)">C</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 2)">C#</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 3)">D</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 4)">D#</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 5)">E</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 6)">F</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 7)">F#</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 8)">G</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 9)">G#</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 10)">A</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 11)">A#</a></li>\
+            <li><a href="#" @click="$emit(\'keySelectedEvent\', 12)">B</a></li>\
+        </ul>\
+    </div>\
+'
 };
 
 let layerComponent = {
@@ -278,7 +297,6 @@ let layerComponent = {
                 <key-component v-for="k in num_beats"\
                     class="keyback" :style="cssVars"\
                     :class="{playing : k === isPlaying + 1}"\
-                    :myLayerId="layerId"\
                     :numKeys="num_beats"\
                     :id="k-1"\
                     :isPlaying="isPlaying"\
@@ -289,10 +307,17 @@ let layerComponent = {
                 </key-component>\
             </div>\
             <div class="layer-controller">\
-                <button id="remove-btn" @click="$emit(\'remove\')">Remove layer</button>\
-                <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
-                <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
-                <scale-selector-component></scale-selector-component>\
+                <div id="buttons">\
+                    <button id="remove-btn" @click="$emit(\'remove\')">Remove layer</button>\
+                    <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
+                    <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
+                </div>\
+                <key-selector-component\
+                    @keySelectedEvent="printKey">\
+                </key-selector-component>\
+                <scale-selector-component\
+                    @scaleSelectedEvent="printScale">\
+                </scale-selector-component>\
             </div>\
         </div>\
      ',
@@ -300,10 +325,11 @@ let layerComponent = {
      components: {
          'key-component' : keyComponent,
          'scale-selector-component' : scaleSelectorComponent,
+         'key-selector-component' : keySelectorComponent,
      },
      
   
-    props : ['layerId','num_beats','total_duration','system_playing','inst_id'],
+    props : ['num_beats','total_duration','system_playing','inst_id'],
     
     data() {
         return {
@@ -311,6 +337,8 @@ let layerComponent = {
             my_clock: '',
             margin: 5,
             inst_selection: 1,
+            key: '',
+            scale: '',
         }
     },
     
@@ -350,6 +378,14 @@ let layerComponent = {
         playInst3(){
             synth3.triggerAttack("E4");
         },
+        printScale(num_scale){
+            console.log("Selected scale " + num_scale);
+            this.scale = num_scale;
+        },
+        printKey(num_key){
+            console.log("Selected key " + num_key)
+            this.key = num_key;
+        }
     }
 };
 
@@ -371,7 +407,7 @@ let sequencerComponent = {
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
                     ref="layers_refs"\
-                    :layerId="layer.id"\
+                    :key="layer.id"\
                     :num_beats="layer.num_beats"\
                     :total_duration="bar_duration"\
                     :system_playing="playing"\
