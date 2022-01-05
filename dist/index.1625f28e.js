@@ -98,6 +98,7 @@ let controllerComponent = {
         },
         instSelection (inst_id) {
             this.$emit('instSelectionEvent', inst_id);
+            this.selected_inst = inst_id;
         }
     }
 };
