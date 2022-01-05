@@ -478,6 +478,13 @@ let layerComponent = {
                     this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
                     );
                     break;
+                case 'Harmonic Minor':
+                    this.scale_keyboard = this.keyboard.filter((value, index)=>{
+                        return 2477 & 1 << index;
+                    }); /*100110101101 and reversed = 2477*/ 
+                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
+                    );
+                    break;
             }
         }
     }
