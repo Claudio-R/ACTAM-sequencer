@@ -467,7 +467,14 @@ let layerComponent = {
                 case 'Major':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2741 & 1 << index;
-                    }); /*101011010101 = 2741*/ 
+                    }); /*101010110101 and reversed = 2741*/ 
+                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
+                    );
+                    break;
+                case 'Minor':
+                    this.scale_keyboard = this.keyboard.filter((value, index)=>{
+                        return 1453 & 1 << index;
+                    }); /*101101011010 and reversed = 1453*/ 
                     this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
                     );
                     break;
