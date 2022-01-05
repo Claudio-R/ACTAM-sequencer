@@ -128,7 +128,7 @@ let scaleSelectorComponent = {
     data() {
         return {
             selectedScale: 'Major',
-            scales: ['Major','Minor','Melodic Minor','Harmonic Minor','Diminuished','Augmented','Hexatonic'],
+            scales: ['Major','Minor','Melodic Minor','Harmonic Minor','Diminished','Augmented','Hexatonic'],
         }
     },
 
@@ -455,6 +455,16 @@ let layerComponent = {
                 case 'Harmonic Minor': this.scale_keyboard = this.keyboard.filter((value, index) => {
                     return 2477 & (1 << index);
                 });/*100110101101 and reversed = 2477*/
+                this.scale_keyboard = this.scale_keyboard.map(ele => ele + this.octave)
+                break;
+                case 'Diminished': this.scale_keyboard = this.keyboard.filter((value, index) => {
+                    return 2925 & (1 << index);
+                });/*101101101101 and reversed = 2925*/
+                this.scale_keyboard = this.scale_keyboard.map(ele => ele + this.octave)
+                break;
+                case 'Augmented': this.scale_keyboard = this.keyboard.filter((value, index) => {
+                    return 2901 & (1 << index);
+                });/*101101010101 and reversed = 2901*/
                 this.scale_keyboard = this.scale_keyboard.map(ele => ele + this.octave)
                 break;
             }
