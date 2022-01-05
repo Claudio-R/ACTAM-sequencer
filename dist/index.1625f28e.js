@@ -2,19 +2,77 @@
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
  * 3. manage shapes --UPDATE riusciamo a bindare una width diversa per ogni layer
- */ Vue.config.devtools = true;
+*/ Vue.config.devtools = true;
+let instSelComponent = {
+    template: '\
+           <div class="inst_sel"\
+           @click="instSelection"\
+           :style="cssVars">\
+           </div>\
+    ',
+    props: {
+        id: {
+            type: Number
+        },
+        selected_inst: {
+            type: Number
+        }
+    },
+    methods: {
+        instSelection () {
+            inst_id = this.id;
+            this.state = true;
+            this.$emit('instSelectionEvent', inst_id);
+        }
+    },
+    computed: {
+        cssVars () {
+            activeCSScolors = [
+                'rgb(255, 0, 0)',
+                'rgb(0, 0, 255)',
+                'rgb(0, 255, 0)'
+            ];
+            passiveCSScolors = [
+                'rgb(120, 0, 0)',
+                'rgb(0, 0, 120)',
+                'rgb(0, 120, 0)'
+            ];
+            if (this.id == this.selected_inst) return {
+                '--inst_sel_color': activeCSScolors[this.id - 1],
+                '--inst_sel_border': '0px'
+            };
+            return {
+                '--inst_sel_color': passiveCSScolors[this.id - 1],
+                '--inst_sel_border': '2px'
+            };
+        }
+    }
+};
 let controllerComponent = {
     template: '\
-         <div class="controller-container">\
-             <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-             <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-             <button class="btn-1" @click="playAll">Play all</button>\
-             <button class="btn-1" @click="stopAll">Stop</button>\
-             <button class="btn-1" @click="inst1Selection">inst1</button>\
-             <button class="btn-1" @click="inst2Selection">inst2</button>\
-             <button class="btn-1" @click="inst3Selection">inst3</button>\
-         </div>\
-     ',
+       <div class="controller">\
+            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
+            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
+            <button class="btn-1" @click="playAll">Play all</button>\
+            <button class="btn-1" @click="stopAll">Stop</button>\
+            <label>Instrument:</label>\
+            <inst-component v-for="k in 3"\
+            :id="k"\
+            :selected_inst=selected_inst\
+            @instSelectionEvent="instSelection">\
+            </inst-component>\
+        </div>\
+    ',
+    components: {
+        'inst-component': instSelComponent
+    },
+    props: {
+        id: {
+        },
+        selected_inst: {
+            default: 1
+        }
+    },
     data () {
         return {
             newInput: '',
@@ -32,9 +90,11 @@ let controllerComponent = {
     methods: {
         addLayer () {
             this.$emit('newLayerEvent', this.newInput_toNumber);
+            this.newInput = '';
         },
         updateBPM () {
             this.$emit('bpmEvent', this.bpm_value_toNumber);
+            this.bpm_value = '';
         },
         playAll () {
             this.$emit('playAllEvent');
@@ -42,30 +102,22 @@ let controllerComponent = {
         stopAll () {
             this.$emit('stopAllEvent');
         },
-        inst1Selection () {
-            inst_id = 1;
-            this.$emit('instSelectionEvent', inst_id);
-        },
-        inst2Selection () {
-            inst_id = 2;
-            this.$emit('instSelectionEvent', inst_id);
-        },
-        inst3Selection () {
-            inst_id = 3;
+        instSelection (inst_id) {
+            this.selected_inst = inst_id;
             this.$emit('instSelectionEvent', inst_id);
         }
     }
 };
 let keyComponent = {
     template: '\
-         <div>\
-            <div class="key"\
-            :class="{active : state1 || state2 || state3}"\
-            @click="toggleActive"\
-            :style="cssVars">\
-            </div>\
-         </div>\
-     ',
+        <div>\
+           <div class="key"\
+           :class="{active : state1 || state2 || state3}"\
+           @click="toggleActive"\
+           :style="cssVars">\
+           </div>\
+        </div>\
+    ',
     props: {
         state1: {
             default: false,
@@ -128,9 +180,9 @@ let keyComponent = {
     computed: {
         cssVars () {
             CSScolors = [
-                'rgb(170, 8, 8)',
-                'rgb(42, 11, 218)',
-                'rgb(255, 217, 0)'
+                'rgb(255, 0, 0)',
+                'rgb(0, 0, 255)',
+                'rgb(0, 255, 0)'
             ];
             /* Modifica qui i colori degli strumenti*/ if (this.state1 && this.state2 && this.state3) return {
                 '--inst_color': CSScolors[3 - this.very_last_color - this.last_color],
@@ -183,26 +235,48 @@ let keyComponent = {
         }
     }
 };
+let scaleSelectorComponent = {
+    template: '\
+    <div id="scale-selector">\
+        <a href="#">Select scale</a>\
+        <ul>\
+            <li><a href="#">Scale 1</a></li>\
+            <li><a href="#">Scale 2</a></li>\
+            <li><a href="#">Scale 3</a></li>\
+            <li><a href="#">Scale 4</a></li>\
+            <li><a href="#">Scale 5</a></li>\
+        </ul>\
+    </div>\
+'
+};
 let layerComponent = {
     template: '\
-        <div>\
-            <key-component v-for="k in num_beats"\
-                class="keyback" :style="cssVars"\
-                :class="{playing : k === isPlaying + 1}"\
-                :myLayerId="layerId"\
-                :numKeys="num_beats"\
-                :id="k-1"\
-                :isPlaying="isPlaying"\
-                :inst_selection="inst_id"\
-                @playSound1Event="playInst1"\
-                @playSound2Event="playInst2"\
-                @playSound3Event="playInst3">\
-            </key-component>\
-            <button class="ctrl-btn" @click="$emit(\'remove\')">Remove layer</button>\
+        <div class="layer">\
+            <div class="keyboard">\
+                <key-component v-for="k in num_beats"\
+                    class="keyback" :style="cssVars"\
+                    :class="{playing : k === isPlaying + 1}"\
+                    :myLayerId="layerId"\
+                    :numKeys="num_beats"\
+                    :id="k-1"\
+                    :isPlaying="isPlaying"\
+                    :inst_selection="inst_id"\
+                    @playSound1Event="playInst1"\
+                    @playSound2Event="playInst2"\
+                    @playSound3Event="playInst3">\
+                </key-component>\
+            </div>\
+            <div class="layer-controller">\
+                <button id="remove-btn" @click="$emit(\'remove\')">Remove layer</button>\
+                <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
+                <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
+                <scale-selector-component></scale-selector-component>\
+            </div>\
         </div>\
      ',
     components: {
-        'key-component': keyComponent
+        'key-component': keyComponent,
+        'scale-selector-component': scaleSelectorComponent
     },
     props: [
         'layerId',
@@ -224,10 +298,10 @@ let layerComponent = {
             return this.total_duration / this.num_beats;
         },
         layer_width () {
-            return document.getElementById('app').offsetWidth - 24;
+            //return document.getElementById('app').offsetWidth - 24
+            return 500;
         },
-        /* - layer margin né app border */ //layer_width() { return this.$el.offsetWidth}, /* non funziona così */
-        cssVars () {
+        /* 698 - layer margin né app border = 674 */ cssVars () {
             return {
                 '--margin': this.margin + 'px',
                 '--keyWidth': (this.layer_width - this.num_beats * 2 * this.margin) / this.num_beats + 'px'
@@ -260,7 +334,8 @@ let sequencerComponent = {
     template: '\
         <div>\
             <div class="view-box">\
-                <p id="bpm-viewer">BPM: {{bpm}}</p>\
+                <p class="viewer">BPM: {{bpm}}</p>\
+                <p class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</p>\
             </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
@@ -269,15 +344,19 @@ let sequencerComponent = {
                 @stopAllEvent="stopAll"\
                 @instSelectionEvent="instSelection"\
             ></controller-component>\
-            <layer-component class="layer" v-for="(layer,index) in layers"\
-                ref="layers_refs"\
-                :layerId="layer.id"\
-                :num_beats="layer.num_beats"\
-                :total_duration="bar_duration"\
-                :system_playing="playing"\
-                :inst_id="inst_id"\
-                @remove="layers.splice(index,1)">\
-            </layer-component>\
+            <div id="layers-container">\
+                <layer-component v-for="(layer,index) in layers"\
+                    ref="layers_refs"\
+                    :layerId="layer.id"\
+                    :num_beats="layer.num_beats"\
+                    :total_duration="bar_duration"\
+                    :system_playing="playing"\
+                    :inst_id="inst_id"\
+                    @remove="layers.splice(index,1)"\
+                    @addKeyEvent="layer.num_beats++"\
+                    @removeKeyEvent="layer.num_beats--">\
+                </layer-component>\
+            </div>\
         </div>\
     ',
     components: {
@@ -299,7 +378,12 @@ let sequencerComponent = {
                     num_beats: 2
                 }, 
             ],
-            inst_id: 1
+            inst_id: 1,
+            inst_name: [
+                'nome_strumento1',
+                'nome_strumento2',
+                'nome_strumento3'
+            ]
         };
     },
     computed: {
