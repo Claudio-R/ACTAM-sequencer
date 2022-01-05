@@ -168,69 +168,6 @@ let keySelectorComponent = {
     }
 };
 
-let menuElementcomponent = {
-    template:'<div @click="$emit(\'selectionEvent\', element)"> {{ element }} </div>',
-    props: ['element']
-}
-
-let scaleSelectorComponent = {
-    template: '\
-        <div id="key-selector" class="selector"> {{ selectedScale }}\
-            <menu-element-component v-for="mode in scales"\
-                class="menu-element"\
-                :element="mode"\
-                @selectionEvent="selectScale">\
-            </menu-element-component>\
-        </div>\
-    ',
-
-    components: {
-        'menu-element-component' : menuElementcomponent,
-    },
-
-    data() {
-        return {
-            selectedScale: 'Major',
-            scales: ['Major','Minor','Melodic Minor','Harmonic Minor','Diminuished','Augmented','Hexatonic'],
-        }
-    },
-
-    methods: {
-        selectScale(scale) {
-            this.selectedScale = scale;
-        }
-    }
-};
-
-let keySelectorComponent = {
-    template: '\
-        <div id="key-selector" class="selector">Selected key: {{ selectedKey }}\
-            <menu-element-component v-for="note in keys"\
-                class="menu-element"\
-                :element="note"\
-                @selectionEvent="selectKey">\
-            </menu-element-component>\
-        </div>\
-    ',
-
-    components: {
-        'menu-element-component' : menuElementcomponent,
-    },
-
-    data() {
-        return {
-            selectedKey: 'C',
-            keys: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],
-        }
-    },
-
-    methods: {
-        selectKey(note) {
-            this.selectedKey = note;
-        },
-    },
-};
-
 let keyComponent = {
     template:'\
         <div @click="toggleActive">\

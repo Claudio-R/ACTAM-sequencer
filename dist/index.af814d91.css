@@ -51,9 +51,10 @@
     margin: 5px;
 }
 
+/******************************************* LAYER *******************************************/
 #layers-container {
     margin: 10px;
-    background-color: #575757;
+    background-color: rgb(28, 140, 148);
 }
 
 .inst_sel {
@@ -72,46 +73,50 @@
 
 }
 
-/******************************************* LAYER *******************************************/
 .layer{
     width: 680px;
     display: inline-flex;
-    height: auto;
-    /*height: calc(62px + 10px + 30px);*/
+    height: calc(var(--columnHeight) + 10px);
     margin: 10px;
 }
 
 .keyboard {
+    display: inline-flex;
+    position: relative;
     width: 500px;
-    height: auto;
+    height: calc(var(--columnHeight) + 10px);
     border-radius: 10px;
     background-color: rgb(199, 202, 0);
 }
 
-.keyback {
-    /* location */
-    position: relative;
+.column {
     display: inline-block;
-    /* aspect */
-    width: calc(var(--keyWidth) - 6px); /* - 2 volte il border*/
-    height: 56px;
-    margin: var(--margin);
+    width: calc(var(--columnWidth) - 6px);
+    height: var(--columnHeight);
     background-color: #c0a630;
     border: 3px solid #0000004d;
     border-radius: 8px;
+    margin: 5px;
 }
-.playing {
-    /* location */
-    display: inline-block;
-    position: relative;
-    /* aspect */
-    border: 3px solid rgb(179, 228, 4);
-  }
 
-  /* bottone */
+.playing {
+    /* aspect */
+    border: 3px solid rgb(188, 180, 255);
+}
+
+.keyback {
+    width: auto;
+    height: 18px;
+    background-color: rgb(107, 216, 183);
+    border: 3px solid #0000004d;
+    border-radius: 8px;
+}
+
+/* bottone */
 .key {
     /* location */
-    position: absolute;
+    display: block;
+    position: relative;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -126,14 +131,14 @@
 }
 
 .active {
-    background-color: var(--inst_color);
+    position: relative;
+    left: calc(var(--columnWidth)/2 - 6px + var(--inst_shift));
     width: 14px;
     height: 14px;
     border-radius: 100%;
-    box-shadow: var(--shadow);
     border: none;
-    position: relative;
-    left: calc(var(--keyWidth)/2 - 3px + var(--inst_shift));
+    background-color: var(--inst_color);
+    box-shadow: var(--shadow);
 }
 
 /******************************************* LAYER CONTROLLER *******************************************/
@@ -143,54 +148,54 @@
     background-color: beige;
 }
 
-#remove-btn {
-    margin: 5px;
+#buttons{
+    display: inline-flex;
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 0;
 }
 
-/******************************************* SCALE SELECTOR *******************************************/
-#scale-selector {
-    
+#addKey-btn{
+    margin-left: 7px;
+}
+
+/******************************************* SCALE and KEY SELECTOR *******************************************/
+.selector {
     margin: 10px;
-    padding: 0;
+    height: 20px;
+    padding: 2px;
     background-color: bisque;
     border: 2px solid rgb(19, 109, 116);
 }
 
-#scale-selector ul
-{
-margin: 0;
-padding: 0;
-list-style-type: none;
+.selector:hover {
+    background-color: #ebcf55;
 }
 
-#scale-selector a
-{
-display: block;
-padding: 5px;
-color: #000;
-text-decoration: none;
+.menu-element {
+    display: none;
+    margin: 0;
+    padding: 2px;
+    list-style-type: none;
 }
 
-#scale-selector a:hover
-{
-background-color: #c0a630;
-color: #FFFFFF;
-text-decoration: none;
+.selector:hover .menu-element {
+    display: block;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: auto;
+    padding: 2px;
+    margin-bottom: -2px;
+    border: 2px solid rgb(19, 109, 116);
+    left: -4px;
+    background: white;
 }
 
-#scale-selector ul
-{ display: none }
-
-#scale-selector:hover ul
-{
-display: block;
-position: absolute;
-z-index:1;
-width:150px;
-padding: 0;
-margin: 0 0 0 -1px;
-border:1px solid black;
-background: white;
+.selector:hover .menu-element:hover {
+    background-color: #c0a630;
+    color: #FFFFFF;
 }
 
 /*# sourceMappingURL=index.af814d91.css.map */
