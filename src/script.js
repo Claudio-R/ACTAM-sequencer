@@ -181,6 +181,7 @@ let keyComponent = {
    
     props: {
         beatId: { type: Number },
+        keyId: {type: Number },
         state1: { default: false },
         state2: { default: false },
         state3: { default: false },
@@ -203,17 +204,17 @@ let keyComponent = {
                 case 1:
                     this.state1 = !this.state1
                     if(this.state1){
-                        this.$emit('playSound1Event')
+                        this.$emit('playSound1Event',this.keyId)
                     } break;
                 case 2: 
                     this.state2 = !this.state2
                     if(this.state2){
-                        this.$emit('playSound2Event')
+                        this.$emit('playSound2Event',this.keyId)
                     } break; 
                 case 3: 
                     this.state3 = !this.state3
                     if(this.state3){
-                        this.$emit('playSound3Event')
+                        this.$emit('playSound3Event',this.keyId)
                     } break;
             } 
         }
@@ -222,13 +223,13 @@ let keyComponent = {
     watch: {
         'isPlaying': function(){
             if(this.state1 && this.isPlaying == this.beatId){
-                this.$emit('playSound1Event')
+                this.$emit('playSound1Event',this.keyId)
             }
             if(this.state2 && this.isPlaying == this.beatId){
-               this.$emit('playSound2Event')
+               this.$emit('playSound2Event',this.keyId)
            }
            if(this.state3 && this.isPlaying == this.beatId){
-               this.$emit('playSound3Event')
+               this.$emit('playSound3Event',this.keyId)
            }
         }
     },
@@ -300,6 +301,7 @@ let columnComponent = {
                 :isPlaying="isPlaying"\
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
+                :keyId=tonesInScale-k\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3">\
@@ -311,17 +313,23 @@ let columnComponent = {
         'key-component' : keyComponent
     },
 
+    data(){
+        return{
+            scale_keyboard : ["C4","D4","E4","F4","G4","A4","B4"],
+        }
+    },
+
     props : ['beatId','tonesInScale', "inst_selected", 'isPlaying'],
 
     methods : {
-        playInst1(){
-            synth1.triggerAttackRelease("A4","16n")
+        playInst1(keyId){
+            synth1.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
         },
-        playInst2(){
-            synth2.triggerAttackRelease("D4","16n")
+        playInst2(keyId){
+            synth2.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
         },
-        playInst3(){
-            synth3.triggerAttack("E4");
+        playInst3(keyId){
+            synth3.triggerAttack(this.scale_keyboard[keyId]);
         },
     }
 }
@@ -361,7 +369,7 @@ let layerComponent = {
         'key-selector-component' : keySelectorComponent,
     },
     
-    props : ['num_beats','total_duration','inst_id'],
+    props : ['num_beats','total_duration','inst_id','key','scale'],
     
     data() {
         return {
