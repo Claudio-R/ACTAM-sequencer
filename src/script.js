@@ -1,7 +1,7 @@
 /** TODO
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
- * 4. provare a gestire key e scale con v-model
+ * 4. provare a gestire key e scale con v-model -- UPDATE CREATA VARIABILE
 */
 
 Vue.config.devtools = true
@@ -11,19 +11,19 @@ let controllerComponent = {
        <div class="controller">\
             <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
             <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-            <button class="btn-1" @click="playAll">Play all</button>\
-            <button class="btn-1" @click="stopAll">Stop</button>\
-            <button class="btn-1" @click="inst1Selection">inst1</button>\
-            <button class="btn-1" @click="inst2Selection">inst2</button>\
-            <button class="btn-1" @click="inst3Selection">inst3</button>\
+            <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
+            <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
+            <button class="btn-1" @click="instSelection(1)">inst1</button>\
+            <button class="btn-1" @click="instSelection(2)">inst2</button>\
+            <button class="btn-1" @click="instSelection(3)">inst3</button>\
         </div>\
     ',
+
     data() {
         return {
             newInput: '',
             bpm_value: '',
         }
-
     },
 
     computed: {
@@ -44,61 +44,97 @@ let controllerComponent = {
             this.$emit('bpmEvent', this.bpm_value_toNumber)
             this.bpm_value = '' 
         },
-        playAll() {
-            this.$emit('playAllEvent')
-        },
-        stopAll() {
-            this.$emit('stopAllEvent')
-        },
-        inst1Selection() {
-           inst_id=1
+        instSelection(inst) {
+           inst_id=inst
            this.$emit('instSelectionEvent', inst_id)
        },
-       inst2Selection() {
-           inst_id=2
-           this.$emit('instSelectionEvent',inst_id)
-       },
-       inst3Selection() {
-           inst_id=3
-           this.$emit('instSelectionEvent',inst_id)
-       },
+    }
+};
+
+let menuElementcomponent = {
+    template:'<div @click="$emit(\'selectionEvent\', element)"> {{ element }} </div>',
+    props: ['element']
+}
+
+let scaleSelectorComponent = {
+
+    template: '\
+        <div id="key-selector" class="selector"> {{ selectedScale }}\
+            <menu-element-component v-for="mode in scales"\
+                class="menu-element"\
+                :element="mode"\
+                @selectionEvent="selectScale">\
+            </menu-element-component>\
+        </div>\
+    ',
+
+    components: {
+        'menu-element-component' : menuElementcomponent,
+    },
+
+    data() {
+        return {
+            selectedScale: 'Major',
+            scales: ['Major','Minor','Melodic Minor','Harmonic Minor','Diminuished','Augmented','Hexatonic'],
+        }
+    },
+
+    methods: {
+        selectScale(scale) {
+            this.selectedScale = scale;
+        }
+    }
+};
+
+let keySelectorComponent = {
+
+    template: '\
+        <div id="key-selector" class="selector">Selected key: {{ selectedKey }}\
+            <menu-element-component v-for="note in keys"\
+                class="menu-element"\
+                :element="note"\
+                @selectionEvent="selectKey">\
+            </menu-element-component>\
+        </div>\
+    ',
+
+    components: {
+        'menu-element-component' : menuElementcomponent,
+    },
+
+    data() {
+        return {
+            selectedKey: 'C',
+            keys: ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],
+        }
+    },
+
+    methods: {
+        selectKey(note) {
+            this.selectedKey = note;
+        }
     }
 };
 
 let keyComponent = {
 
     template:'\
-        <div>\
-           <div class="key"\
-           :class="{active : state1 || state2 || state3}"\
-           @click="toggleActive"\
-           :style="cssVars">\
-           </div>\
+        <div @click="toggleActive">\
+            <div class="key"\
+                :class="{active : state1 || state2 || state3}"\
+                :style="cssVars">\
+            </div>\
         </div>\
     ',
    
     props: {
-        state1: {
-            default: false,
-            required: true,
-        },
-        state2: {
-           default: false,
-           required: true,
-       },
-       state3: {
-           default: false,
-           required: true,
-       },
-        isPlaying: {
-            type: Number,
-        },
-        id: {
-            type: Number,
-        },
-        inst_selection:{
-            type: Number,
-        },
+        beatId: { type: Number },
+        state1: { default: false },
+        state2: { default: false },
+        state3: { default: false },
+        
+        isPlaying: { type: Number },
+        inst_selection:{ type: Number },
         last_color:{
             type: Number,
             default: 0,
@@ -112,34 +148,39 @@ let keyComponent = {
     methods: {
         toggleActive() {
             switch(this.inst_selection){
-               case 1: this.state1 = !this.state1
-                       if(this.state1){
-                       this.$emit('playSound1Event')
-                       }break;
-               case 2: this.state2 = !this.state2
-                       if(this.state2){
-                       this.$emit('playSound2Event')
-                       }break; 
-               case 3: this.state3 = !this.state3
-                       if(this.state3){
-                       this.$emit('playSound3Event')
-               }break;
-            }
+                case 1:
+                    this.state1 = !this.state1
+                    if(this.state1){
+                        this.$emit('playSound1Event')
+                    } break;
+                case 2: 
+                    this.state2 = !this.state2
+                    if(this.state2){
+                        this.$emit('playSound2Event')
+                    } break; 
+                case 3: 
+                    this.state3 = !this.state3
+                    if(this.state3){
+                        this.$emit('playSound3Event')
+                    } break;
+            } 
         }
     },
+
     watch: {
         'isPlaying': function(){
-            if(this.state1 && this.isPlaying == this.id){
+            if(this.state1 && this.isPlaying == this.beatId){
                 this.$emit('playSound1Event')
             }
-            if(this.state2 && this.isPlaying == this.id){
+            if(this.state2 && this.isPlaying == this.beatId){
                this.$emit('playSound2Event')
            }
-           if(this.state3 && this.isPlaying == this.id){
+           if(this.state3 && this.isPlaying == this.beatId){
                this.$emit('playSound3Event')
            }
         }
     },
+
     computed: {
        cssVars() {
            CSScolors = ['rgb(170, 8, 8)','rgb(42, 11, 218)','rgb(255, 217, 0)'] /* Modifica qui i colori degli strumenti*/
@@ -199,60 +240,53 @@ let keyComponent = {
     }
 }
 
-let scaleSelectorComponent = {
+let columnComponent = {
 
     template: '\
-    <div id="scale-selector" class="selector">\
-        <a href="#">Select Scale</a>\
-        <ul>\
-            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 1)">Scale 1</a></li>\
-            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 2)">Scale 2</a></li>\
-            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 3)">Scale 3</a></li>\
-            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 4)">Scale 4</a></li>\
-            <li><a href="#" @click="$emit(\'scaleSelectedEvent\', 5)">Scale 5</a></li>\
-        </ul>\
-    </div>\
-'
-};
+        <div>\
+            <key-component v-for="k in tonesInScale"\
+                class="keyback"\
+                :isPlaying="isPlaying"\
+                :inst_selection="inst_selection"\
+                :beatId="beatId"\
+                @playSound1Event="playInst1"\
+                @playSound2Event="playInst2"\
+                @playSound3Event="playInst3">\
+            </key-component>\
+        </div>\
+    ',
 
-let keySelectorComponent = {
+    components : {
+        'key-component' : keyComponent
+    },
 
-    template: '\
-    <div id="key-selector" class="selector">\
-        <a href="#">Select Key</a>\
-        <ul>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 1)">C</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 2)">C#</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 3)">D</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 4)">D#</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 5)">E</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 6)">F</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 7)">F#</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 8)">G</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 9)">G#</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 10)">A</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 11)">A#</a></li>\
-            <li><a href="#" @click="$emit(\'keySelectedEvent\', 12)">B</a></li>\
-        </ul>\
-    </div>\
-'
-};
+    props : ['beatId','tonesInScale', "inst_selection", 'isPlaying'],
+
+    methods : {
+        playInst1(){
+            synth1.triggerAttackRelease("A4","16n")
+        },
+        playInst2(){
+            synth2.triggerAttackRelease("D4","16n")
+        },
+        playInst3(){
+            synth3.triggerAttack("E4");
+        },
+    }
+}
 
 let layerComponent = {
  
-     template:'\
+    template:'\
         <div class="layer">\
             <div class="keyboard">\
-                <key-component v-for="k in num_beats"\
-                    class="keyback" :style="cssVars"\
+                <column-component v-for="k in num_beats"\
+                    class="column" :style="cssVars"\
                     :class="{playing : k === isPlaying + 1}"\
-                    :numKeys="num_beats"\
-                    :id="k-1"\
+                    :beatId="k-1"\
                     :isPlaying="isPlaying"\
                     :inst_selection="inst_id"\
-                    @playSound1Event="playInst1"\
-                    @playSound2Event="playInst2"\
-                    @playSound3Event="playInst3">\
+                    :tonesInScale="tonesInScale">\
                 </key-component>\
             </div>\
             <div class="layer-controller">\
@@ -269,25 +303,23 @@ let layerComponent = {
                 </scale-selector-component>\
             </div>\
         </div>\
-     ',
+    ',
      
-     components: {
-         'key-component' : keyComponent,
-         'scale-selector-component' : scaleSelectorComponent,
-         'key-selector-component' : keySelectorComponent,
-     },
-     
-  
-    props : ['num_beats','total_duration','system_playing','inst_id'],
+    components: {
+        'column-component' : columnComponent,
+        'scale-selector-component' : scaleSelectorComponent,
+        'key-selector-component' : keySelectorComponent,
+    },
+    
+    props : ['num_beats','total_duration','inst_id'],
     
     data() {
         return {
             isPlaying: 0,
             my_clock: '',
-            margin: 5,
-            inst_selection: 1,
             key: '',
             scale: '',
+            tonesInScale: 7,
         }
     },
     
@@ -295,15 +327,15 @@ let layerComponent = {
         my_beat_duration() {
             return this.total_duration/this.num_beats;
         },
-        layer_width() { 
-            //return document.getElementById('app').offsetWidth - 24
-            return 500
-        }, /* 698 - layer margin né app border = 674 */
         cssVars() {
+            var layerWidth = 500;
+            var margin = 5;
+            var borderKey = 3;
+            var keyHeight = 18;
             return {
-                '--margin': this.margin + 'px',
-                '--keyWidth': (this.layer_width - this.num_beats*2*this.margin)/this.num_beats + 'px'
-                }
+                '--columnWidth': (layerWidth - this.num_beats*2*margin)/this.num_beats + 'px',
+                '--columnHeight' : this.tonesInScale*(keyHeight + 2*borderKey) + 'px',
+            }
         }
     },
 
@@ -317,15 +349,6 @@ let layerComponent = {
         play() {
             this.stop();
             this.my_clock = setInterval(this.next,this.my_beat_duration)
-        },
-        playInst1(){
-            synth1.triggerAttackRelease("A4","16n")
-        },
-        playInst2(){
-            synth2.triggerAttackRelease("D4","16n")
-        },
-        playInst3(){
-            synth3.triggerAttack("E4");
         },
         printScale(num_scale){
             console.log("Selected scale " + num_scale);
@@ -351,15 +374,14 @@ let sequencerComponent = {
                 @bpmEvent="updateBPM"\
                 @playAllEvent="playAll"\
                 @stopAllEvent="stopAll"\
-                @instSelectionEvent="instSelection"\
+                @instSelectionEvent="instSelected"\
             ></controller-component>\
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
                     ref="layers_refs"\
                     :key="layer.id"\
                     :num_beats="layer.num_beats"\
-                    :total_duration="bar_duration"\
-                    :system_playing="playing"\
+                    :total_duration="total_duration"\
                     :inst_id="inst_id"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="layer.num_beats++"\
@@ -377,8 +399,8 @@ let sequencerComponent = {
     data(){
         return {
             bpm: 120,
-            playing: false,
             nextId: 2,
+            inst_id: 1,
             layers: [
                 {
                     id: 0,
@@ -389,12 +411,11 @@ let sequencerComponent = {
                     num_beats: 2
                 },
             ],
-            inst_id: 1,
         }
     },
 
     computed: {
-        bar_duration() {
+        total_duration() {
             if(this.layers[0]){
                 return this.layers[0].num_beats*60000/this.bpm
             }
@@ -411,18 +432,14 @@ let sequencerComponent = {
             )
             this.nextId += 1
         },
-        /** errors when bpm is updated while playing */
         updateBPM(bpm_input) {
-            /** assign new bpm value */
             this.bpm = bpm_input
         },
         /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */
         playAll() {
-            /** first reset all layers */
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].isPlaying = 0
             }
-            /** then restart */
             this.playing = true
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].play()
@@ -434,7 +451,7 @@ let sequencerComponent = {
             }
             this.playing = false
         },
-        instSelection(inst_id) {
+        instSelected(inst_id) {
             this.inst_id=inst_id
         },
     }
