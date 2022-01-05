@@ -57,6 +57,23 @@
     background-color: rgb(28, 140, 148);
 }
 
+.inst_sel {
+    /* location */
+    position: relative;
+    display: inline-block;
+    top: 6px;
+    /* aspect */
+    width: calc(14px - 2 * var(--inst_sel_border));
+    height: calc(14px - 2 * var(--inst_sel_border));
+    background-color: var(--inst_sel_color);
+    padding: none;
+    border: var(--inst_sel_border) solid #0000004d;
+    border-radius: 100%;
+    margin: 5px;
+
+}
+
+/******************************************* LAYER *******************************************/
 .layer{
     width: 680px;
     display: inline-flex;

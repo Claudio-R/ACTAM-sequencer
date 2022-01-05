@@ -6,6 +6,44 @@
 
 Vue.config.devtools = true
 
+let instSelComponent = {
+
+    template:'\
+            <div class="inst_sel"\
+                @click="instSelection"\
+                :style="cssVars">\
+           </div>\
+    ',
+
+    props:{
+        id: { type: Number, },
+        selected_inst:{ type: Number, }
+    },
+
+    methods: {
+        instSelection() {
+           this.state = true
+           this.$emit('instSelectionEvent', this.id)
+       },
+    },
+
+    computed: {
+        cssVars() {
+            activeCSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)']
+            passiveCSScolors = ['rgb(120, 0, 0)','rgb(0, 0, 120)','rgb(0, 120, 0)']
+            if(this.id==this.selected_inst){
+            return{
+                '--inst_sel_color': activeCSScolors[this.id-1],
+                '--inst_sel_border': '0px'
+            }}
+            return{
+                '--inst_sel_color': passiveCSScolors[this.id-1],
+                '--inst_sel_border': '2px'
+            }
+        }
+    }
+}
+
 let controllerComponent = {
     template:'\
        <div class="controller">\
@@ -13,16 +51,31 @@ let controllerComponent = {
             <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
             <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
             <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
-            <button class="btn-1" @click="instSelection(1)">inst1</button>\
-            <button class="btn-1" @click="instSelection(2)">inst2</button>\
-            <button class="btn-1" @click="instSelection(3)">inst3</button>\
+            <label>Instrument:</label>\
+            <inst-component v-for="k in num_inst"\
+                :id="k"\
+                :selected_inst=selected_inst\
+                @instSelectionEvent="instSelection">\
+            </inst-component>\
         </div>\
     ',
+
+    components: {
+        'inst-component' : instSelComponent,
+    },
+
+    props: {
+        id: {},
+        selected_inst:{
+            default: 1,
+        }
+    },
 
     data() {
         return {
             newInput: '',
             bpm_value: '',
+            num_inst: 3,
         }
     },
 
@@ -44,8 +97,7 @@ let controllerComponent = {
             this.$emit('bpmEvent', this.bpm_value_toNumber)
             this.bpm_value = '' 
         },
-        instSelection(inst) {
-           inst_id=inst
+        instSelection(inst_id) {
            this.$emit('instSelectionEvent', inst_id)
        },
     }
@@ -57,7 +109,6 @@ let menuElementcomponent = {
 }
 
 let scaleSelectorComponent = {
-
     template: '\
         <div id="key-selector" class="selector"> {{ selectedScale }}\
             <menu-element-component v-for="mode in scales"\
@@ -87,7 +138,6 @@ let scaleSelectorComponent = {
 };
 
 let keySelectorComponent = {
-
     template: '\
         <div id="key-selector" class="selector">Selected key: {{ selectedKey }}\
             <menu-element-component v-for="note in keys"\
@@ -112,12 +162,11 @@ let keySelectorComponent = {
     methods: {
         selectKey(note) {
             this.selectedKey = note;
-        }
-    }
+        },
+    },
 };
 
 let keyComponent = {
-
     template:'\
         <div @click="toggleActive">\
             <div class="key"\
@@ -134,7 +183,7 @@ let keyComponent = {
         state3: { default: false },
         
         isPlaying: { type: Number },
-        inst_selection:{ type: Number },
+        inst_selected:{ type: Number },
         last_color:{
             type: Number,
             default: 0,
@@ -147,7 +196,7 @@ let keyComponent = {
 
     methods: {
         toggleActive() {
-            switch(this.inst_selection){
+            switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1
                     if(this.state1){
@@ -183,7 +232,7 @@ let keyComponent = {
 
     computed: {
        cssVars() {
-           CSScolors = ['rgb(170, 8, 8)','rgb(42, 11, 218)','rgb(255, 217, 0)'] /* Modifica qui i colori degli strumenti*/
+           CSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)'] /* Modifica qui i colori degli strumenti*/
            if(this.state1 && this.state2 &&this.state3){
                return {
                    '--inst_color': CSScolors[3-this.very_last_color-this.last_color],
@@ -241,13 +290,12 @@ let keyComponent = {
 }
 
 let columnComponent = {
-
     template: '\
         <div>\
             <key-component v-for="k in tonesInScale"\
                 class="keyback"\
                 :isPlaying="isPlaying"\
-                :inst_selection="inst_selection"\
+                :inst_selected="inst_selected"\
                 :beatId="beatId"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
@@ -260,7 +308,7 @@ let columnComponent = {
         'key-component' : keyComponent
     },
 
-    props : ['beatId','tonesInScale', "inst_selection", 'isPlaying'],
+    props : ['beatId','tonesInScale', "inst_selected", 'isPlaying'],
 
     methods : {
         playInst1(){
@@ -276,7 +324,7 @@ let columnComponent = {
 }
 
 let layerComponent = {
- 
+
     template:'\
         <div class="layer">\
             <div class="keyboard">\
@@ -285,7 +333,7 @@ let layerComponent = {
                     :class="{playing : k === isPlaying + 1}"\
                     :beatId="k-1"\
                     :isPlaying="isPlaying"\
-                    :inst_selection="inst_id"\
+                    :inst_selected="inst_id"\
                     :tonesInScale="tonesInScale">\
                 </key-component>\
             </div>\
@@ -367,7 +415,7 @@ let sequencerComponent = {
         <div>\
             <div class="view-box">\
                 <p class="viewer">BPM: {{bpm}}</p>\
-                <p class="viewer">Selected instrument: {{inst_id}}</p>\
+                <p class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</p>\
             </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
@@ -400,7 +448,6 @@ let sequencerComponent = {
         return {
             bpm: 120,
             nextId: 2,
-            inst_id: 1,
             layers: [
                 {
                     id: 0,
@@ -411,6 +458,8 @@ let sequencerComponent = {
                     num_beats: 2
                 },
             ],
+            inst_id: 1,
+            inst_name: ['nome_strumento1','nome_strumento2','nome_strumento3'] /*mettere nomi degli strumenti*/
         }
     },
 
