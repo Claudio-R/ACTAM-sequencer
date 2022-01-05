@@ -405,22 +405,6 @@ let layerComponent = {
                 '--columnHeight' : this.tonesInScale*(keyHeight + 2*borderKey) + 'px',
             }
         },
-        keyboardCreator(){
-            this.keyboard = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
-            i=0
-            selected_key=this.key
-            while(selected_key!=this.keyboard[i]){
-                first_element = this.keyboard.shift()
-                this.keyboard = this.keyboard.concat(first_element)
-            }
-            switch(this.scale){
-                case 'Major': this.scale_keyboard = this.keyboard.filter((value, index) => {
-                    return 2741 & (1 << index);
-                });/*101011010101 = 2741*/
-                this.scale_keyboard = this.scale_keyboard.map(ele => ele + this.octave)
-                break;
-            }
-        }
     },
 
     methods: {
@@ -437,10 +421,28 @@ let layerComponent = {
         printScale(num_scale){
             console.log("Selected scale " + num_scale);
             this.scale = num_scale;
+            this.keyboardCreator()
         },
         printKey(num_key){
             console.log("Selected key " + num_key)
             this.key = num_key;
+            this.keyboardCreator()
+        },
+        keyboardCreator(){
+            this.keyboard = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
+            i=0
+            selected_key=this.key
+            while(selected_key!=this.keyboard[i]){
+                first_element = this.keyboard.shift()
+                this.keyboard = this.keyboard.concat(first_element)
+            }
+            switch(this.scale){
+                case 'Major': this.scale_keyboard = this.keyboard.filter((value, index) => {
+                    return 2741 & (1 << index);
+                });/*101011010101 = 2741*/
+                this.scale_keyboard = this.scale_keyboard.map(ele => ele + this.octave)
+                break;
+            }
         }
     },
 };

@@ -419,6 +419,28 @@ let layerComponent = {
                 '--columnWidth': (layerWidth - this.num_beats * 2 * margin) / this.num_beats + 'px',
                 '--columnHeight': this.tonesInScale * (keyHeight + 2 * borderKey) + 'px'
             };
+        }
+    },
+    methods: {
+        next () {
+            this.isPlaying = (this.isPlaying + 1) % this.num_beats;
+        },
+        stop () {
+            clearInterval(this.my_clock);
+        },
+        play () {
+            this.stop();
+            this.my_clock = setInterval(this.next, this.my_beat_duration);
+        },
+        printScale (num_scale) {
+            console.log("Selected scale " + num_scale);
+            this.scale = num_scale;
+            this.keyboardCreator();
+        },
+        printKey (num_key) {
+            console.log("Selected key " + num_key);
+            this.key = num_key;
+            this.keyboardCreator();
         },
         keyboardCreator () {
             this.keyboard = [
@@ -450,26 +472,6 @@ let layerComponent = {
                     );
                     break;
             }
-        }
-    },
-    methods: {
-        next () {
-            this.isPlaying = (this.isPlaying + 1) % this.num_beats;
-        },
-        stop () {
-            clearInterval(this.my_clock);
-        },
-        play () {
-            this.stop();
-            this.my_clock = setInterval(this.next, this.my_beat_duration);
-        },
-        printScale (num_scale) {
-            console.log("Selected scale " + num_scale);
-            this.scale = num_scale;
-        },
-        printKey (num_key) {
-            console.log("Selected key " + num_key);
-            this.key = num_key;
         }
     }
 };
