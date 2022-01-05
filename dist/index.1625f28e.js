@@ -138,6 +138,7 @@ let scaleSelectorComponent = {
     methods: {
         selectScale (scale) {
             this.selectedScale = scale;
+            this.$emit('scaleSelectedEvent', scale);
         }
     }
 };
@@ -159,16 +160,16 @@ let keySelectorComponent = {
             selectedKey: 'C',
             keys: [
                 'C',
-                'C#',
+                'Db',
                 'D',
-                'D#',
+                'Eb',
                 'E',
                 'F',
-                'F#',
+                'Gb',
                 'G',
-                'G#',
+                'Ab',
                 'A',
-                'A#',
+                'Bb',
                 'B'
             ]
         };
@@ -176,6 +177,7 @@ let keySelectorComponent = {
     methods: {
         selectKey (note) {
             this.selectedKey = note;
+            this.$emit('keySelectedEvent', note);
         }
     }
 };
@@ -320,24 +322,12 @@ let columnComponent = {
     components: {
         'key-component': keyComponent
     },
-    data () {
-        return {
-            scale_keyboard: [
-                "C4",
-                "D4",
-                "E4",
-                "F4",
-                "G4",
-                "A4",
-                "B4"
-            ]
-        };
-    },
     props: [
         'beatId',
         'tonesInScale',
         "inst_selected",
-        'isPlaying'
+        'isPlaying',
+        'scale_keyboard'
     ],
     methods: {
         playInst1 (keyId) {
@@ -361,6 +351,7 @@ let layerComponent = {
                     :beatId="k-1"\
                     :isPlaying="isPlaying"\
                     :inst_selected="inst_id"\
+                    :scale_keyboard="scale_keyboard"\
                     :tonesInScale="tonesInScale">\
                 </key-component>\
             </div>\
@@ -384,20 +375,35 @@ let layerComponent = {
         'scale-selector-component': scaleSelectorComponent,
         'key-selector-component': keySelectorComponent
     },
-    props: [
-        'num_beats',
-        'total_duration',
-        'inst_id',
-        'key',
-        'scale'
-    ],
+    props: {
+        num_beats: Number,
+        total_duration: Number,
+        inst_id: Number,
+        key: {
+            default: 'C'
+        },
+        scale: {
+            default: 'Major'
+        },
+        scale_keyboard: {
+            default: [
+                "C4",
+                "D4",
+                "E4",
+                "F4",
+                "G4",
+                "A4",
+                "B4"
+            ]
+        }
+    },
     data () {
         return {
             isPlaying: 0,
             my_clock: '',
-            key: '',
-            scale: '',
-            tonesInScale: 7
+            tonesInScale: 7,
+            keyboard: '',
+            octave: 4
         };
     },
     computed: {
@@ -413,6 +419,37 @@ let layerComponent = {
                 '--columnWidth': (layerWidth - this.num_beats * 2 * margin) / this.num_beats + 'px',
                 '--columnHeight': this.tonesInScale * (keyHeight + 2 * borderKey) + 'px'
             };
+        },
+        keyboardCreator () {
+            this.keyboard = [
+                "C",
+                "Db",
+                "D",
+                "Eb",
+                "E",
+                "F",
+                "Gb",
+                "G",
+                "Ab",
+                "A",
+                "Bb",
+                "B"
+            ];
+            i = 0;
+            selected_key = this.key;
+            while(selected_key != this.keyboard[i]){
+                first_element = this.keyboard.shift();
+                this.keyboard = this.keyboard.concat(first_element);
+            }
+            switch(this.scale){
+                case 'Major':
+                    this.scale_keyboard = this.keyboard.filter((value, index)=>{
+                        return 2741 & 1 << index;
+                    }); /*101011010101 = 2741*/ 
+                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
+                    );
+                    break;
+            }
         }
     },
     methods: {
