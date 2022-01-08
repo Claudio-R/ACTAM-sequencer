@@ -84,7 +84,7 @@
     display: inline-flex;
     position: relative;
     width: 500px;
-    height: calc(var(--columnHeight) + 10px);
+    height: auto;
     border-radius: 10px;
     background-color: rgb(199, 202, 0);
 }
@@ -92,11 +92,35 @@
 .column {
     display: inline-block;
     width: calc(var(--columnWidth) - 6px);
-    height: var(--columnHeight);
+    height: auto;
     background-color: #c0a630;
     border: 3px solid #0000004d;
     border-radius: 8px;
     margin: 5px;
+}
+
+#beat-controller {
+    width: auto;
+    height: auto;
+    margin: 1px;
+    border: 2px solid #575757;
+    background-color: rgb(216, 216, 190);
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.beat-btn {
+    width: 30%;
+    height: auto;
+    border: 1px;
+    border-radius: 5px;
+    margin: 2px auto 2px;
+}
+
+.muteActive {
+    background-color: red;
+    /*border: 1px solid rgb(163, 24, 24);*/
 }
 
 .playing {
@@ -157,6 +181,7 @@
 }
 
 #addKey-btn{
+    width: auto;
     margin-left: 7px;
 }
 
