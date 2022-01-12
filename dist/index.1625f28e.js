@@ -206,6 +206,10 @@ let keyComponent = {
         state3: {
             default: false
         },
+        beatMuted: {
+            type: Boolean,
+            default: false
+        },
         isPlaying: {
             type: Number
         },
@@ -304,6 +308,18 @@ let keyComponent = {
         }
     }
 };
+let beatControllerComponent = {
+    template: '\
+        <div id="beat-controller">\
+            <button class="beat-btn" @click="$emit(\'playBeatEvent\')">Play</button>\
+            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">Mute</button>\
+            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">Clear</button>\
+        </div>\
+    ',
+    props: [
+        'beatMuted'
+    ]
+};
 let columnComponent = {
     template: '\
         <div>\
@@ -313,14 +329,20 @@ let columnComponent = {
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
                 :keyId=tonesInScale-k\
+                :beatMuted=beatMuted\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3">\
             </key-component>\
+            <beat-controller-component\
+                :beatMuted="beatMuted"\
+                @muteBeatEvent="beatMuted = !beatMuted">\
+            </beat-controller-component>\
         </div>\
     ',
     components: {
-        'key-component': keyComponent
+        'key-component': keyComponent,
+        'beat-controller-component': beatControllerComponent
     },
     props: [
         'beatId',
@@ -329,6 +351,11 @@ let columnComponent = {
         'isPlaying',
         'scale_keyboard'
     ],
+    data () {
+        return {
+            beatMuted: false
+        };
+    },
     methods: {
         playInst1 (keyId) {
             synth1.triggerAttackRelease(this.scale_keyboard[keyId], "16n");
@@ -353,7 +380,7 @@ let layerComponent = {
                     :inst_selected="inst_id"\
                     :scale_keyboard="scale_keyboard"\
                     :tonesInScale="tonesInScale">\
-                </key-component>\
+                </column-component>\
             </div>\
             <div class="layer-controller">\
                 <div id="buttons">\
@@ -367,13 +394,19 @@ let layerComponent = {
                 <scale-selector-component\
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
+                <div id="octave-selector">\
+                    <p class="octave-viewer">Octave: {{octave}}</p>\
+                    <button id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button id="removeKey-btn" @click="lessOctave"> - </button>\
+                </div>\
             </div>\
         </div>\
     ',
     components: {
         'column-component': columnComponent,
         'scale-selector-component': scaleSelectorComponent,
-        'key-selector-component': keySelectorComponent
+        'key-selector-component': keySelectorComponent,
+        'beat-controller-component': beatControllerComponent
     },
     props: {
         num_beats: Number,
@@ -457,10 +490,11 @@ let layerComponent = {
                 "Bb",
                 "B"
             ];
-            i = 0;
-            selected_key = this.key;
-            while(selected_key != this.keyboard[i]){
+            this.keyboard = this.keyboard.map((ele)=>ele + this.octave
+            );
+            while(this.key + this.octave != this.keyboard[0]){
                 first_element = this.keyboard.shift();
+                first_element = first_element.slice(0, -1) + (this.octave + 1);
                 this.keyboard = this.keyboard.concat(first_element);
             }
             switch(this.scale){
@@ -468,45 +502,41 @@ let layerComponent = {
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2741 & 1 << index;
                     }); /*101010110101 and reversed = 2741*/ 
-                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
-                    );
                     break;
                 case 'Minor':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 1453 & 1 << index;
                     }); /*101101011010 and reversed = 1453*/ 
-                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
-                    );
                     break;
                 case 'Melodic Minor':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2733 & 1 << index;
                     }); /*101010101101 and reversed = 2733*/ 
-                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
-                    );
                     break;
                 case 'Harmonic Minor':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2477 & 1 << index;
                     }); /*100110101101 and reversed = 2477*/ 
-                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
-                    );
                     break;
                 case 'Diminished':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2925 & 1 << index;
                     }); /*101101101101 and reversed = 2925*/ 
-                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
-                    );
                     break;
                 case 'Augmented':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2901 & 1 << index;
                     }); /*101101010101 and reversed = 2901*/ 
-                    this.scale_keyboard = this.scale_keyboard.map((ele)=>ele + this.octave
-                    );
                     break;
             }
+        },
+        moreOctave () {
+            this.octave++;
+            this.keyboardCreator();
+        },
+        lessOctave () {
+            this.octave--;
+            this.keyboardCreator();
         }
     }
 };
