@@ -206,6 +206,10 @@ let keyComponent = {
         state3: {
             default: false
         },
+        beatMuted: {
+            type: Boolean,
+            default: false
+        },
         isPlaying: {
             type: Number
         },
@@ -304,6 +308,18 @@ let keyComponent = {
         }
     }
 };
+let beatControllerComponent = {
+    template: '\
+        <div id="beat-controller">\
+            <button class="beat-btn" @click="$emit(\'playBeatEvent\')">Play</button>\
+            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">Mute</button>\
+            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">Clear</button>\
+        </div>\
+    ',
+    props: [
+        'beatMuted'
+    ]
+};
 let columnComponent = {
     template: '\
         <div>\
@@ -313,14 +329,20 @@ let columnComponent = {
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
                 :keyId=tonesInScale-k\
+                :beatMuted=beatMuted\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3">\
             </key-component>\
+            <beat-controller-component\
+                :beatMuted="beatMuted"\
+                @muteBeatEvent="beatMuted = !beatMuted">\
+            </beat-controller-component>\
         </div>\
     ',
     components: {
-        'key-component': keyComponent
+        'key-component': keyComponent,
+        'beat-controller-component': beatControllerComponent
     },
     props: [
         'beatId',
@@ -329,6 +351,11 @@ let columnComponent = {
         'isPlaying',
         'scale_keyboard'
     ],
+    data () {
+        return {
+            beatMuted: false
+        };
+    },
     methods: {
         playInst1 (keyId) {
             synth1.triggerAttackRelease(this.scale_keyboard[keyId], "16n");
@@ -353,7 +380,7 @@ let layerComponent = {
                     :inst_selected="inst_id"\
                     :scale_keyboard="scale_keyboard"\
                     :tonesInScale="tonesInScale">\
-                </key-component>\
+                </column-component>\
             </div>\
             <div class="layer-controller">\
                 <div id="buttons">\
@@ -367,13 +394,19 @@ let layerComponent = {
                 <scale-selector-component\
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
+                <div id="octave-selector">\
+                    <p class="octave-viewer">Octave: {{octave}}</p>\
+                    <button id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button id="removeKey-btn" @click="lessOctave"> - </button>\
+                </div>\
             </div>\
         </div>\
     ',
     components: {
         'column-component': columnComponent,
         'scale-selector-component': scaleSelectorComponent,
-        'key-selector-component': keySelectorComponent
+        'key-selector-component': keySelectorComponent,
+        'beat-controller-component': beatControllerComponent
     },
     props: {
         num_beats: Number,
@@ -507,6 +540,14 @@ let layerComponent = {
                     );
                     break;
             }
+        },
+        moreOctave () {
+            this.octave++;
+            this.keyboardCreator();
+        },
+        lessOctave () {
+            this.octave--;
+            this.keyboardCreator();
         }
     }
 };

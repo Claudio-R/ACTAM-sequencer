@@ -376,6 +376,11 @@ let layerComponent = {
                 <scale-selector-component\
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
+                <div id="octave-selector">\
+                    <p class="octave-viewer">Octave: {{octave}}</p>\
+                    <button id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button id="removeKey-btn" @click="lessOctave"> - </button>\
+                </div>\
             </div>\
         </div>\
     ',
@@ -489,6 +494,14 @@ let layerComponent = {
                 this.scale_keyboard = this.scale_keyboard.map(ele => ele + this.octave)
                 break;
             }
+        },
+        moreOctave(){
+            this.octave++
+            this.keyboardCreator()
+        },
+        lessOctave(){
+            this.octave--
+            this.keyboardCreator()
         }
     },
 };
