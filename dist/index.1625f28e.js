@@ -225,29 +225,9 @@ let keyComponent = {
             default: 0
         }
     },
-    methods: {
-        toggleActive () {
-            switch(this.inst_selected){
-                case 1:
-                    this.state1 = !this.state1;
-                    if (this.state1) this.$emit('playSound1Event', this.keyId);
-                    break;
-                case 2:
-                    this.state2 = !this.state2;
-                    if (this.state2) this.$emit('playSound2Event', this.keyId);
-                    break;
-                case 3:
-                    this.state3 = !this.state3;
-                    if (this.state3) this.$emit('playSound3Event', this.keyId);
-                    break;
-            }
-        }
-    },
     watch: {
         'isPlaying': function() {
-            if (this.state1 && this.isPlaying == this.beatId) this.$emit('playSound1Event', this.keyId);
-            if (this.state2 && this.isPlaying == this.beatId) this.$emit('playSound2Event', this.keyId);
-            if (this.state3 && this.isPlaying == this.beatId) this.$emit('playSound3Event', this.keyId);
+            if (!this.beatMuted && this.isPlaying == this.beatId) this.playKey();
         }
     },
     computed: {
@@ -306,12 +286,40 @@ let keyComponent = {
                 };
             }
         }
+    },
+    methods: {
+        toggleActive () {
+            switch(this.inst_selected){
+                case 1:
+                    this.state1 = !this.state1;
+                    if (!this.beatMuted && this.state1) this.$emit('playSound1Event', this.keyId);
+                    break;
+                case 2:
+                    this.state2 = !this.state2;
+                    if (!this.beatMuted && this.state2) this.$emit('playSound2Event', this.keyId);
+                    break;
+                case 3:
+                    this.state3 = !this.state3;
+                    if (!this.beatMuted && this.state3) this.$emit('playSound3Event', this.keyId);
+                    break;
+            }
+        },
+        playKey () {
+            if (this.state1) this.$emit('playSound1Event', this.keyId);
+            if (this.state2) this.$emit('playSound2Event', this.keyId);
+            if (this.state3) this.$emit('playSound3Event', this.keyId);
+        },
+        clearKey () {
+            if (this.state1) this.state1 = !this.state1;
+            if (this.state2) this.state2 = !this.state2;
+            if (this.state3) this.state3 = !this.state3;
+        }
     }
 };
 let beatControllerComponent = {
     template: '\
         <div id="beat-controller">\
-            <button class="beat-btn" @click="$emit(\'playBeatEvent\')">Play</button>\
+            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">Play</button>\
             <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">Mute</button>\
             <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">Clear</button>\
         </div>\
@@ -325,6 +333,7 @@ let columnComponent = {
         <div>\
             <key-component v-for="k in tonesInScale"\
                 class="keyback"\
+                ref="keys_refs"\
                 :isPlaying="isPlaying"\
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
@@ -332,12 +341,14 @@ let columnComponent = {
                 :beatMuted=beatMuted\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
-                @playSound3Event="playInst3">\
-            </key-component>\
+                @playSound3Event="playInst3"\
+            ></key-component>\
             <beat-controller-component\
                 :beatMuted="beatMuted"\
-                @muteBeatEvent="beatMuted = !beatMuted">\
-            </beat-controller-component>\
+                @monitorBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"\
+                @muteBeatEvent="beatMuted = !beatMuted"\
+                @clearBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].clearKey() }"\
+            ></beat-controller-component>\
         </div>\
     ',
     components: {
@@ -373,10 +384,10 @@ let layerComponent = {
         <div class="layer">\
             <div class="layer-labels">\
                 <div v-if="inst_id==3">\
-                <p class="key-label" v-for="k in tonesInScale">{{drum_keyboard[tonesInScale-k]}}</p>\
+                    <p class="key-label" v-for="k in tonesInScale">{{drum_keyboard[tonesInScale-k]}}</p>\
                 </div>\
                 <div v-else>\
-                <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
+                    <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
                 </div>\
             </div>\
             <div class="keyboard">\
@@ -459,6 +470,11 @@ let layerComponent = {
             keyboard: '',
             octave: 4
         };
+    },
+    watch: {
+        'isPlaying': function(val) {
+            if (val == 0) this.play();
+        }
     },
     computed: {
         my_beat_duration () {
@@ -545,15 +561,23 @@ let layerComponent = {
                     break;
                 case 'Diminished':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
-                        return 2925 & 1 << index;
-                    }); /*101101101101 and reversed = 2925*/ 
+                        return 1755 & 1 << index;
+                    }); /*110110110110 and reversed = 2925*/ 
                     this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
                     break;
                 case 'Augmented':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
-                        return 2901 & 1 << index;
-                    }); /*101101010101 and reversed = 2901*/ 
+                        return 2457 & 1 << index;
+                    }); /*10011011001 and reversed = 2457*/ 
                     this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octave + 1));
+                    break;
+                case 'Hexatonic':
+                    this.scale_keyboard = this.keyboard.filter((value, index)=>{
+                        return 1365 & 1 << index;
+                    }); /*101010101010 and reversed = 1365*/ 
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octave + 1));
                     break;
             }
         },

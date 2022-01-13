@@ -517,14 +517,21 @@ let layerComponent = {
                 this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave+1))
                 break;
                 case 'Diminished': this.scale_keyboard = this.keyboard.filter((value, index) => {
-                    return 2925 & (1 << index);
-                });/*101101101101 and reversed = 2925*/
+                    return 1755 & (1 << index);
+                });/*110110110110 and reversed = 2925*/
                 this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave+1))
                 break;
                 case 'Augmented': this.scale_keyboard = this.keyboard.filter((value, index) => {
-                    return 2901 & (1 << index);
-                });/*101101010101 and reversed = 2901*/
+                    return 2457 & (1 << index);
+                });/*10011011001 and reversed = 2457*/
                 this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave+1))
+                this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octave+1))
+                break;
+                case 'Hexatonic': this.scale_keyboard = this.keyboard.filter((value, index) => {
+                    return 1365 & (1 << index);
+                });/*101010101010 and reversed = 1365*/
+                this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave+1))
+                this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octave+1))
                 break;
             }
         },
