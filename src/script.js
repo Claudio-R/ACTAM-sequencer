@@ -414,7 +414,7 @@ let layerComponent = {
             default: ["C4","D4","E4","F4","G4","A4","B4","C5"],
         },
         drum_keyboard : {
-            default: ["kick", "snare", "closed hh", "open hh", "ride","cowbell","nonloso","nonloso2"]
+            default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"]
         }
     },
     

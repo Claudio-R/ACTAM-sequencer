@@ -442,12 +442,12 @@ let layerComponent = {
             default: [
                 "kick",
                 "snare",
+                "tom 1",
+                "tom 2",
                 "closed hh",
                 "open hh",
                 "ride",
-                "cowbell",
-                "nonloso",
-                "nonloso2"
+                "cowbell"
             ]
         }
     },
