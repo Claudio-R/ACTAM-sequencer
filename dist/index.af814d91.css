@@ -4,7 +4,7 @@
     position: relative;
     
     /*size*/
-    width: 790px;
+    width: 800px;
     height: 50%;
     
     /*aspect*/
@@ -74,7 +74,6 @@
 }
 
 .layer{
-    width: 680px;
     display: inline-flex;
     height: calc(var(--columnHeight) + 10px);
     margin: 10px;
@@ -168,7 +167,6 @@
 /******************************************* LAYER CONTROLLER *******************************************/
 .layer-controller{
     margin-left: 10px;
-    width: 170px;
     background-color: beige;
 }
 

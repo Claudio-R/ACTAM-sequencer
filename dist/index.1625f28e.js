@@ -563,7 +563,6 @@ let layerComponent = {
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 1755 & 1 << index;
                     }); /*110110110110 and reversed = 2925*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
                     break;
                 case 'Augmented':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
