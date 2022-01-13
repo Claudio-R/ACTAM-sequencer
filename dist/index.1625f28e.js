@@ -371,6 +371,14 @@ let columnComponent = {
 let layerComponent = {
     template: '\
         <div class="layer">\
+            <div class="layer-labels">\
+                <div v-if="inst_id==3">\
+                <p class="key-label" v-for="k in tonesInScale">{{drum_keyboard[tonesInScale-k]}}</p>\
+                </div>\
+                <div v-else>\
+                <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
+                </div>\
+            </div>\
             <div class="keyboard">\
                 <column-component v-for="k in num_beats"\
                     class="column" :style="cssVars"\
@@ -428,6 +436,18 @@ let layerComponent = {
                 "A4",
                 "B4",
                 "C5"
+            ]
+        },
+        drum_keyboard: {
+            default: [
+                "kick",
+                "snare",
+                "closed hh",
+                "open hh",
+                "ride",
+                "cowbell",
+                "nonloso",
+                "nonloso2"
             ]
         }
     },
