@@ -377,16 +377,18 @@ let layerComponent = {
                     <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
                 </div>\
             </div>\
-            <div class="keyboard">\
-                <column-component v-for="k in num_beats"\
-                    class="column" :style="cssVars"\
-                    :class="{playing : k === isPlaying + 1}"\
-                    :beatId="k-1"\
-                    :isPlaying="isPlaying"\
-                    :inst_selected="inst_id"\
-                    :scale_keyboard="scale_keyboard"\
-                    :tonesInScale="tonesInScale">\
-                </column-component>\
+            <div v-for="j in n_bars">\
+                <div class="keyboard">\
+                    <column-component v-for="k in num_beats"\
+                        class="column" :style="cssVars"\
+                        :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
+                        :beatId="k*j-1-(k-num_beats)*(j-1)"\
+                        :isPlaying="isPlaying"\
+                        :inst_selected="inst_id"\
+                        :scale_keyboard="scale_keyboard"\
+                        :tonesInScale="tonesInScale">\
+                    </column-component>\
+                </div>\
             </div>\
             <div class="layer-controller">\
                 <div id="buttons">\
@@ -420,6 +422,7 @@ let layerComponent = {
         num_beats: Number,
         total_duration: Number,
         inst_id: Number,
+        n_bars: Number,
         key: {
             default: 'C',
         },
@@ -459,16 +462,18 @@ let layerComponent = {
             var margin = 5;
             var borderKey = 3;
             var keyHeight = 18;
+            var barWidth = 500;
             return {
-                '--columnWidth': (layerWidth - this.num_beats*2*margin)/this.num_beats + 'px',
+                '--columnWidth': (layerWidth - this.num_beats*2*margin)/(this.num_beats*this.n_bars) + 'px',
                 '--columnHeight' : this.tonesInScale*(keyHeight + 2*borderKey) + 'px',
+                '--barWidth': (barWidth)/this.n_bars + 'px'
             }
         },
     },
 
     methods: {
         next() {
-            this.isPlaying = (this.isPlaying + 1) % (this.num_beats);
+            this.isPlaying = (this.isPlaying + 1) % (this.num_beats*this.n_bars);
         },
         stop() {
             clearInterval(this.my_clock)
@@ -553,6 +558,9 @@ let sequencerComponent = {
             <div class="view-box">\
                 <p class="viewer">BPM: {{bpm}}</p>\
                 <p class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</p>\
+                <p class="viewer">Bars: {{n_bars}}</p>\
+                <button id="remove-btn" @click="if(n_bars<4){n_bars++}"> + </button>\
+                <button id="addKey-btn" @click="if(n_bars>1){n_bars--}"> - </button>\
             </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
@@ -568,6 +576,7 @@ let sequencerComponent = {
                     :num_beats="layer.num_beats"\
                     :total_duration="total_duration"\
                     :inst_id="inst_id"\
+                    :n_bars="n_bars"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="layer.num_beats++"\
                     @removeKeyEvent="layer.num_beats--">\
@@ -597,7 +606,8 @@ let sequencerComponent = {
                 },
             ],
             inst_id: 1,
-            inst_name: ['nome_strumento1','nome_strumento2','nome_strumento3'] /*mettere nomi degli strumenti*/
+            inst_name: ['nome_strumento1','nome_strumento2','nome_strumento3'], /*mettere nomi degli strumenti*/
+            n_bars:1
         }
     },
 
