@@ -300,6 +300,11 @@ let keyComponent = {
             if(this.state1){ this.state1 = !this.state1 }
             if(this.state2){ this.state2 = !this.state2 }
             if(this.state3){ this.state3 = !this.state3 }
+        },
+        setKey(state1,state2,state3){
+            this.state1=state1
+            this.state2=state2
+            this.state3=state3
         }
     },
 
@@ -351,6 +356,25 @@ let columnComponent = {
         playInst3(keyId){
             drum[keyId].start();
         },
+        getKeyProps() {
+            var key_state1 = []
+            var key_state2 = []
+            var key_state3 = []
+            for(j=0;j<this.tonesInScale;j++){
+                key_state1[j]=this.$refs.keys_refs[j].state1;
+                key_state2[j]=this.$refs.keys_refs[j].state2;
+                key_state3[j]=this.$refs.keys_refs[j].state3;
+            }
+            return {key_state1,key_state2,key_state3}
+        },
+        setColumn(newvar){
+            key_state1=newvar.key_state1
+            key_state2=newvar.key_state2
+            key_state3=newvar.key_state3
+            for(j=0;j<this.tonesInScale;j++){
+                this.$refs.keys_refs[j].setKey(key_state1[j],key_state2[j],key_state3[j])
+            }
+        },
         clearAllKeys(){
             for(var idx=0; idx<this.tonesInScale; idx++) { 
                 this.$refs.keys_refs[idx].clearKey() 
@@ -373,6 +397,7 @@ let layerComponent = {
             <div v-for="j in n_bars">\
                 <div class="keyboard">\
                     <column-component v-for="k in num_beats"\
+                        ref="columns_refs"\
                         class="column" :style="cssVars"\
                         ref = beats_refs\
                         :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
@@ -544,6 +569,16 @@ let layerComponent = {
         lessOctave(){
             this.octave--
             this.keyboardCreator()
+        },
+        addLBar(){
+            Vue.nextTick(() =>{
+                //column_states = Array(this.num_beats)
+                    for(i=0;i<this.num_beats;i++) {
+                    newvar = this.$refs.columns_refs[i].getKeyProps()
+                    this.$refs.columns_refs[i+(this.n_bars-1)*this.num_beats].setColumn(newvar)
+                    //column_states[i]=(newvar)
+                    }
+            })
         }
     },
 };
@@ -556,7 +591,7 @@ let sequencerComponent = {
                 <p class="viewer">BPM: {{bpm}}</p>\
                 <p class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</p>\
                 <p class="viewer">Bars: {{n_bars}}</p>\
-                <button id="remove-btn" @click="if(n_bars<4){n_bars++}"> + </button>\
+                <button id="remove-btn" @click="if(n_bars<4){n_bars++;addBar()}"> + </button>\
                 <button id="addKey-btn" @click="if(n_bars>1){n_bars--}"> - </button>\
             </div>\
             <controller-component\
@@ -656,6 +691,11 @@ let sequencerComponent = {
         instSelected(inst_id) {
             this.inst_id=inst_id
         },
+        addBar(){
+            for(idx in this.layers) {
+                this.$refs.layers_refs[idx].addLBar()
+            }
+        }
     }
 }
 
