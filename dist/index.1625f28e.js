@@ -319,9 +319,9 @@ let keyComponent = {
 let beatControllerComponent = {
     template: '\
         <div id="beat-controller">\
-            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">Play</button>\
-            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">Mute</button>\
-            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">Clear</button>\
+            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">P</button>\
+            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">M</button>\
+            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">C</button>\
         </div>\
     ',
     props: [
@@ -476,12 +476,15 @@ let layerComponent = {
     },
     watch: {
         'isPlaying': function(val) {
-            if (val == 0) this.play();
+            /*if(val==0) { this.play(); }*/ if (val == 0) this.$emit('restartEvent');
         }
     },
     computed: {
+        beatPlaying () {
+            return this.isPlaying;
+        },
         my_beat_duration () {
-            return this.total_duration / this.num_beats;
+            return Number(this.total_duration / this.num_beats);
         },
         cssVars () {
             var layerWidth = 500;
@@ -622,8 +625,9 @@ let sequencerComponent = {
                     :n_bars="n_bars"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="layer.num_beats++"\
-                    @removeKeyEvent="layer.num_beats--">\
-                </layer-component>\
+                    @removeKeyEvent="layer.num_beats--"\
+                    @restartEvent="restart(index)"\
+                ></layer-component>\
             </div>\
         </div>\
     ',
@@ -679,6 +683,12 @@ let sequencerComponent = {
         stopAll () {
             for(idx in this.layers)this.$refs.layers_refs[idx].stop();
             this.playing = false;
+        },
+        restart (index) {
+            if (index == 0) {
+                console.log("Restart");
+                this.playAll();
+            }
         },
         instSelected (inst_id) {
             this.inst_id = inst_id;

@@ -361,7 +361,7 @@ let columnComponent = {
             synth2.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
         },
         playInst3(keyId){
-            synth3.triggerAttack(this.scale_keyboard[keyId]);
+            drum[keyId].start();
         },
     }
 }
@@ -613,7 +613,7 @@ let sequencerComponent = {
                 },
             ],
             inst_id: 1,
-            inst_name: ['nome_strumento1','nome_strumento2','nome_strumento3'], /*mettere nomi degli strumenti*/
+            inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
             n_bars:1
         }
     },
@@ -718,8 +718,50 @@ var synth2 = new Tone.DuoSynth({
     }
     }
     }).toDestination();
-var synth3 = new Tone.PluckSynth({
-    attackNoise  : 1 ,
-    dampening  : 8000 ,
-    resonance  : 0.9
-    }).toDestination();
+
+/*--------Firestore config for drum-----------*/
+import { initializeApp } from "firebase/app";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyB23PkWGtyU3LFIYBy8uiKT0RM9gUYrkXk",
+  authDomain: "actam21.firebaseapp.com",
+  projectId: "actam21",
+  storageBucket: "actam21.appspot.com",
+  messagingSenderId: "745216869995",
+  appId: "1:745216869995:web:7ad950861a786b73b8d32e",
+  measurementId: "G-N1VC6LWMBM"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+
+// Get a reference to the storage service, which is used to create references in your storage bucket
+const storage = getStorage(firebaseApp);
+
+var drum = Array(8);
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_KICK_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[0] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_SNARE_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[1] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_TOM_HIGH_CLEAN_CFC.wav')).then(function(url) {
+        drum[2] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_TOM_MID_CLEAN_CFC.wav')).then(function(url) {
+        drum[3] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_H-CL_CLEAN_CFC.wav')).then(function(url) {
+        drum[4] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_H-OH_CLEAN_CFC.wav')).then(function(url) {
+        drum[5] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_CYM_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[6] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_COW_CLEAN_CFC.wav')).then(function(url) {
+        drum[7] = new Tone.Player(url).toDestination();
+    })
