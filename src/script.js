@@ -199,10 +199,8 @@ let keyComponent = {
     
     watch: {
         'isPlaying': function() {
-            if(!this.layerMuted) {
-                if(!this.beatMuted && this.isPlaying == this.beatId) { 
-                    this.playKey();
-                }
+            if(!this.layerMuted && !this.beatMuted && this.isPlaying == this.beatId) { 
+                this.playKey();
             } 
         }
     },
@@ -221,7 +219,7 @@ let keyComponent = {
                this.very_last_color = Math.abs(this.last_color-1)
                return {
                    '--inst_color': CSScolors[this.very_last_color],
-                   '--shadow': '-7px 0 '+CSScolors[this.last_color],
+                   '--shadow': '-7px 0 '+ CSScolors[this.last_color],
                    '--inst_shift': '3.5px',
                    }
                }
@@ -270,17 +268,17 @@ let keyComponent = {
             switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1
-                    if(!this.beatMuted && this.state1){
+                    if(!this.layerMuted && !this.beatMuted && this.state1){
                         this.$emit('playSound1Event',this.keyId)
                     } break;
                 case 2: 
                     this.state2 = !this.state2
-                    if(!this.beatMuted && this.state2){
+                    if(!this.layerMuted && !this.beatMuted && this.state2){
                         this.$emit('playSound2Event',this.keyId)
                     } break; 
                 case 3: 
                     this.state3 = !this.state3
-                    if(!this.beatMuted && this.state3){
+                    if(!this.layerMuted && !this.beatMuted && this.state3){
                         this.$emit('playSound3Event',this.keyId)
                     } break;
             } 
@@ -400,7 +398,7 @@ let layerComponent = {
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
                 <div id="octave-selector">\
-                    <div class="octave-viewer">Octave: {{octave}}</div>\
+                    <div class="octave-viewer">Octave: {{octave}} </div>\
                     <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
                     <button class="layer-btn" @click="lessOctave"> - </button>\
                 </div>\
@@ -442,8 +440,7 @@ let layerComponent = {
     },
 
     watch: {
-        'isPlaying': function(val) { 
-            /*if(val==0) { this.play(); }*/
+        'isPlaying': function(val) {
             if(val==0){
                 this.$emit('restartEvent');
             }
@@ -464,7 +461,7 @@ let layerComponent = {
             var keyHeight = 18;
             var barWidth = 500;
             return {
-                '--columnWidth': (layerWidth - this.num_beats*2*margin)/(this.num_beats*this.n_bars) + 'px',
+                '--columnWidth': (layerWidth - this.num_beats*2*margin)/(this.num_beats*this.n_bars) + 'px', //157
                 '--columnHeight' : this.tonesInScale*(keyHeight + 2*borderKey) + 'px',
                 '--barWidth': (barWidth)/this.n_bars + 'px'
             }
@@ -578,8 +575,8 @@ let sequencerComponent = {
                     :inst_id="inst_id"\
                     :n_bars="n_bars"\
                     @remove="layers.splice(index,1)"\
-                    @addKeyEvent="layer.num_beats++"\
-                    @removeKeyEvent="layer.num_beats--"\
+                    @addKeyEvent="if(!systemPlaying)layer.num_beats++"\
+                    @removeKeyEvent="if(!systemPlaying)layer.num_beats--"\
                     @restartEvent="restart(index)"\
                 ></layer-component>\
             </div>\
@@ -593,6 +590,7 @@ let sequencerComponent = {
     
     data(){
         return {
+            systemPlaying: false,
             bpm: 120,
             nextId: 2,
             inst_id: 1,
@@ -635,19 +633,19 @@ let sequencerComponent = {
         },
         /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */
         playAll() {
+            this.systemPlaying = true
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].isPlaying = 0
             }
-            this.playing = true
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].play()
             }
         },
         stopAll() {
+            this.systemPlaying = false
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].stop()
             }
-            this.playing = false
         },
         restart(index) {
             if(index==0){
