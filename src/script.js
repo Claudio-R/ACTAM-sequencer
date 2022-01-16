@@ -189,6 +189,7 @@ let keyComponent = {
         state3: { default: false },
         
         beatMuted: { type: Boolean, default: false },
+        layerMuted: { type: Boolean, default: false },
 
         isPlaying: { type: Number },
         inst_selected:{ type: Number },
@@ -197,10 +198,12 @@ let keyComponent = {
     },
     
     watch: {
-        'isPlaying': function() { 
-            if(!this.beatMuted && this.isPlaying == this.beatId) { 
-                this.playKey();
-            }
+        'isPlaying': function() {
+            if(!this.layerMuted) {
+                if(!this.beatMuted && this.isPlaying == this.beatId) { 
+                    this.playKey();
+                }
+            } 
         }
     },
 
@@ -309,18 +312,6 @@ let keyComponent = {
 
 }
 
-let beatControllerComponent = {
-    template: '\
-        <div id="beat-controller">\
-            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">P</button>\
-            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">M</button>\
-            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">C</button>\
-        </div>\
-    ',
-
-    props: ['beatMuted']
-}
-
 let columnComponent = {
     template: '\
         <div>\
@@ -331,26 +322,25 @@ let columnComponent = {
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
                 :keyId=tonesInScale-k\
-                :beatMuted=beatMuted\
+                :beatMuted="beatMuted"\
+                :layerMuted="layerMuted"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
             ></key-component>\
-            <beat-controller-component\
-                :beatMuted="beatMuted"\
-                @monitorBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"\
-                @muteBeatEvent="beatMuted = !beatMuted"\
-                @clearBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].clearKey() }"\
-            ></beat-controller-component>\
+            <div id="beat-controller">\
+                <button class="beat-btn monitor-btn" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }">P</button>\
+                <button class="beat-btn mute-btn" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted">M</button>\
+                <button class="beat-btn clear-btn" @click="clearAllKeys">C</button>\
+            </div>\
         </div>\
     ',
 
     components : {
         'key-component' : keyComponent,
-        'beat-controller-component' : beatControllerComponent,
     },
 
-    props : ['beatId','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard'],
+    props : ['beatId','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard'],
 
     data() {
         return {
@@ -386,6 +376,11 @@ let columnComponent = {
             for(j=0;j<this.tonesInScale;j++){
                 this.$refs.keys_refs[j].setKey(key_state1[j],key_state2[j],key_state3[j])
             }
+        },
+        clearAllKeys(){
+            for(var idx=0; idx<this.tonesInScale; idx++) { 
+                this.$refs.keys_refs[idx].clearKey() 
+            }
         }
     }
 }
@@ -406,13 +401,15 @@ let layerComponent = {
                     <column-component v-for="k in num_beats"\
                         ref="columns_refs"\
                         class="column" :style="cssVars"\
+                        ref = beats_refs\
                         :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
                         :beatId="k*j-1-(k-num_beats)*(j-1)"\
+                        :layerMuted="layerMuted"\
                         :isPlaying="isPlaying"\
                         :inst_selected="inst_id"\
                         :scale_keyboard="scale_keyboard"\
-                        :tonesInScale="tonesInScale">\
-                    </column-component>\
+                        :tonesInScale="tonesInScale"\
+                    ></column-component>\
                 </div>\
             </div>\
             <div class="layer-controller">\
@@ -428,9 +425,13 @@ let layerComponent = {
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
                 <div id="octave-selector">\
-                    <p class="octave-viewer">Octave: {{octave}}</p>\
-                    <button id="addKey-btn" @click="moreOctave"> + </button>\
-                    <button id="removeKey-btn" @click="lessOctave"> - </button>\
+                    <div class="octave-viewer">Octave: {{octave}}</div>\
+                    <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button class="layer-btn" @click="lessOctave"> - </button>\
+                </div>\
+                <div class="layer-sound-controller">\
+                    <button class="layer-btn mute-btn" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted">M</button>\
+                    <button class="layer-btn clear-btn" @click="for(var idx=0; idx<$refs.beats_refs.length; idx++) { $refs.beats_refs[idx].clearAllKeys() }">C</button>\
                 </div>\
             </div>\
         </div>\
@@ -440,7 +441,6 @@ let layerComponent = {
         'column-component' : columnComponent,
         'scale-selector-component' : scaleSelectorComponent,
         'key-selector-component' : keySelectorComponent,
-        'beat-controller-component' : beatControllerComponent,
     },
     
     props : {
@@ -448,18 +448,11 @@ let layerComponent = {
         total_duration: Number,
         inst_id: Number,
         n_bars: Number,
-        key: {
-            default: 'C',
-        },
-        scale: {
-            default:'Major',
-        },
-        scale_keyboard : {
-            default: ["C4","D4","E4","F4","G4","A4","B4","C5"],
-        },
-        drum_keyboard : {
-            default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"]
-        }
+        
+        key: { default: 'C' },
+        scale: { default:'Major' },
+        scale_keyboard : { default: ["C4","D4","E4","F4","G4","A4","B4","C5"] },
+        drum_keyboard : { default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"] }
     },
     
     data() {
@@ -468,7 +461,8 @@ let layerComponent = {
             my_clock: '',
             tonesInScale: 8,
             keyboard: '',
-            octave: 4
+            octave: 4,
+            layerMuted: false,
         }
     },
 
