@@ -113,14 +113,7 @@
 .beat-btn {
     width: 30%;
     height: auto;
-    border: 1px;
-    border-radius: 5px;
     margin: 2px auto 2px;
-}
-
-.muteActive {
-    background-color: red;
-    /*border: 1px solid rgb(163, 24, 24);*/
 }
 
 .playing {
@@ -200,6 +193,23 @@
     height: 80%;
     border: 2px solid rgb(216, 216, 178);
     background-color: bisque;
+}
+
+.layer-sound-controller{
+    margin: 10px;
+}
+
+.monitor-btn {
+    background-color: rgba(147, 238, 110, 0.849);
+}
+.mute-btn {
+    background-color: rgb(255, 166, 0);
+}
+.muteActive {
+    background-color: red;
+}
+.clear-btn {
+    background-color: rgb(42, 206, 206);
 }
 
 /******************************************* LAYER LABELS *******************************************/

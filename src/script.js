@@ -189,6 +189,7 @@ let keyComponent = {
         state3: { default: false },
         
         beatMuted: { type: Boolean, default: false },
+        layerMuted: { type: Boolean, default: false },
 
         isPlaying: { type: Number },
         inst_selected:{ type: Number },
@@ -197,10 +198,12 @@ let keyComponent = {
     },
     
     watch: {
-        'isPlaying': function() { 
-            if(!this.beatMuted && this.isPlaying == this.beatId) { 
-                this.playKey();
-            }
+        'isPlaying': function() {
+            if(!this.layerMuted) {
+                if(!this.beatMuted && this.isPlaying == this.beatId) { 
+                    this.playKey();
+                }
+            } 
         }
     },
 
@@ -304,18 +307,6 @@ let keyComponent = {
 
 }
 
-let beatControllerComponent = {
-    template: '\
-        <div id="beat-controller">\
-            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">P</button>\
-            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">M</button>\
-            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">C</button>\
-        </div>\
-    ',
-
-    props: ['beatMuted']
-}
-
 let columnComponent = {
     template: '\
         <div>\
@@ -326,26 +317,25 @@ let columnComponent = {
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
                 :keyId=tonesInScale-k\
-                :beatMuted=beatMuted\
+                :beatMuted="beatMuted"\
+                :layerMuted="layerMuted"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
             ></key-component>\
-            <beat-controller-component\
-                :beatMuted="beatMuted"\
-                @monitorBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"\
-                @muteBeatEvent="beatMuted = !beatMuted"\
-                @clearBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].clearKey() }"\
-            ></beat-controller-component>\
+            <div id="beat-controller">\
+                <button class="beat-btn monitor-btn" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }">P</button>\
+                <button class="beat-btn mute-btn" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted">M</button>\
+                <button class="beat-btn clear-btn" @click="clearAllKeys">C</button>\
+            </div>\
         </div>\
     ',
 
     components : {
         'key-component' : keyComponent,
-        'beat-controller-component' : beatControllerComponent,
     },
 
-    props : ['beatId','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard'],
+    props : ['beatId','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard'],
 
     data() {
         return {
@@ -361,8 +351,13 @@ let columnComponent = {
             synth2.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
         },
         playInst3(keyId){
-            synth3.triggerAttack(this.scale_keyboard[keyId]);
+            drum[keyId].start();
         },
+        clearAllKeys(){
+            for(var idx=0; idx<this.tonesInScale; idx++) { 
+                this.$refs.keys_refs[idx].clearKey() 
+            }
+        }
     }
 }
 
@@ -381,13 +376,15 @@ let layerComponent = {
                 <div class="keyboard">\
                     <column-component v-for="k in num_beats"\
                         class="column" :style="cssVars"\
+                        ref = beats_refs\
                         :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
                         :beatId="k*j-1-(k-num_beats)*(j-1)"\
+                        :layerMuted="layerMuted"\
                         :isPlaying="isPlaying"\
                         :inst_selected="inst_id"\
                         :scale_keyboard="scale_keyboard"\
-                        :tonesInScale="tonesInScale">\
-                    </column-component>\
+                        :tonesInScale="tonesInScale"\
+                    ></column-component>\
                 </div>\
             </div>\
             <div class="layer-controller">\
@@ -403,9 +400,13 @@ let layerComponent = {
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
                 <div id="octave-selector">\
-                    <p class="octave-viewer">Octave: {{octave}}</p>\
-                    <button id="addKey-btn" @click="moreOctave"> + </button>\
-                    <button id="removeKey-btn" @click="lessOctave"> - </button>\
+                    <div class="octave-viewer">Octave: {{octave}}</div>\
+                    <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button class="layer-btn" @click="lessOctave"> - </button>\
+                </div>\
+                <div class="layer-sound-controller">\
+                    <button class="layer-btn mute-btn" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted">M</button>\
+                    <button class="layer-btn clear-btn" @click="for(var idx=0; idx<$refs.beats_refs.length; idx++) { $refs.beats_refs[idx].clearAllKeys() }">C</button>\
                 </div>\
             </div>\
         </div>\
@@ -415,7 +416,6 @@ let layerComponent = {
         'column-component' : columnComponent,
         'scale-selector-component' : scaleSelectorComponent,
         'key-selector-component' : keySelectorComponent,
-        'beat-controller-component' : beatControllerComponent,
     },
     
     props : {
@@ -423,18 +423,11 @@ let layerComponent = {
         total_duration: Number,
         inst_id: Number,
         n_bars: Number,
-        key: {
-            default: 'C',
-        },
-        scale: {
-            default:'Major',
-        },
-        scale_keyboard : {
-            default: ["C4","D4","E4","F4","G4","A4","B4","C5"],
-        },
-        drum_keyboard : {
-            default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"]
-        }
+        
+        key: { default: 'C' },
+        scale: { default:'Major' },
+        scale_keyboard : { default: ["C4","D4","E4","F4","G4","A4","B4","C5"] },
+        drum_keyboard : { default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"] }
     },
     
     data() {
@@ -443,7 +436,8 @@ let layerComponent = {
             my_clock: '',
             tonesInScale: 8,
             keyboard: '',
-            octave: 4
+            octave: 4,
+            layerMuted: false,
         }
     },
 
@@ -613,7 +607,7 @@ let sequencerComponent = {
                 },
             ],
             inst_id: 1,
-            inst_name: ['nome_strumento1','nome_strumento2','nome_strumento3'], /*mettere nomi degli strumenti*/
+            inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
             n_bars:1
         }
     },
@@ -718,8 +712,50 @@ var synth2 = new Tone.DuoSynth({
     }
     }
     }).toDestination();
-var synth3 = new Tone.PluckSynth({
-    attackNoise  : 1 ,
-    dampening  : 8000 ,
-    resonance  : 0.9
-    }).toDestination();
+
+/*--------Firestore config for drum-----------*/
+import { initializeApp } from "firebase/app";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyB23PkWGtyU3LFIYBy8uiKT0RM9gUYrkXk",
+  authDomain: "actam21.firebaseapp.com",
+  projectId: "actam21",
+  storageBucket: "actam21.appspot.com",
+  messagingSenderId: "745216869995",
+  appId: "1:745216869995:web:7ad950861a786b73b8d32e",
+  measurementId: "G-N1VC6LWMBM"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+
+// Get a reference to the storage service, which is used to create references in your storage bucket
+const storage = getStorage(firebaseApp);
+
+var drum = Array(8);
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_KICK_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[0] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_SNARE_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[1] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_TOM_HIGH_CLEAN_CFC.wav')).then(function(url) {
+        drum[2] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_TOM_MID_CLEAN_CFC.wav')).then(function(url) {
+        drum[3] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_H-CL_CLEAN_CFC.wav')).then(function(url) {
+        drum[4] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_H-OH_CLEAN_CFC.wav')).then(function(url) {
+        drum[5] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_CYM_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[6] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_COW_CLEAN_CFC.wav')).then(function(url) {
+        drum[7] = new Tone.Player(url).toDestination();
+    })
