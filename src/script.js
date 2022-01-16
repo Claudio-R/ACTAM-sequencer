@@ -397,7 +397,6 @@ let layerComponent = {
             <div v-for="j in n_bars">\
                 <div class="keyboard">\
                     <column-component v-for="k in num_beats"\
-                        ref="columns_refs"\
                         class="column" :style="cssVars"\
                         ref = beats_refs\
                         :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
@@ -574,8 +573,8 @@ let layerComponent = {
             Vue.nextTick(() =>{
                 //column_states = Array(this.num_beats)
                     for(i=0;i<this.num_beats;i++) {
-                    newvar = this.$refs.columns_refs[i].getKeyProps()
-                    this.$refs.columns_refs[i+(this.n_bars-1)*this.num_beats].setColumn(newvar)
+                    newvar = this.$refs.beats_refs[i].getKeyProps()
+                    this.$refs.beats_refs[i+(this.n_bars-1)*this.num_beats].setColumn(newvar)
                     //column_states[i]=(newvar)
                     }
             })

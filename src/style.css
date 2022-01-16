@@ -1,11 +1,6 @@
 #app {
-
-    /*location*/
-    position: relative;
-    
     /*size*/
-    width: 800px;
-    height: 50%;
+    width: min-content;
     
     /*aspect*/
     border: 2px solid rgb(199, 202, 0);
