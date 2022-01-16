@@ -307,9 +307,9 @@ let keyComponent = {
 let beatControllerComponent = {
     template: '\
         <div id="beat-controller">\
-            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">Play</button>\
-            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">Mute</button>\
-            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">Clear</button>\
+            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">P</button>\
+            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">M</button>\
+            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">C</button>\
         </div>\
     ',
 
@@ -361,7 +361,7 @@ let columnComponent = {
             synth2.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
         },
         playInst3(keyId){
-            synth3.triggerAttack(this.scale_keyboard[keyId]);
+            drum[keyId].start();
         },
     }
 }
@@ -377,16 +377,18 @@ let layerComponent = {
                     <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
                 </div>\
             </div>\
-            <div class="keyboard">\
-                <column-component v-for="k in num_beats"\
-                    class="column" :style="cssVars"\
-                    :class="{playing : k === isPlaying + 1}"\
-                    :beatId="k-1"\
-                    :isPlaying="isPlaying"\
-                    :inst_selected="inst_id"\
-                    :scale_keyboard="scale_keyboard"\
-                    :tonesInScale="tonesInScale">\
-                </column-component>\
+            <div v-for="j in n_bars">\
+                <div class="keyboard">\
+                    <column-component v-for="k in num_beats"\
+                        class="column" :style="cssVars"\
+                        :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
+                        :beatId="k*j-1-(k-num_beats)*(j-1)"\
+                        :isPlaying="isPlaying"\
+                        :inst_selected="inst_id"\
+                        :scale_keyboard="scale_keyboard"\
+                        :tonesInScale="tonesInScale">\
+                    </column-component>\
+                </div>\
             </div>\
             <div class="layer-controller">\
                 <div id="buttons">\
@@ -420,6 +422,7 @@ let layerComponent = {
         num_beats: Number,
         total_duration: Number,
         inst_id: Number,
+        n_bars: Number,
         key: {
             default: 'C',
         },
@@ -446,29 +449,37 @@ let layerComponent = {
 
     watch: {
         'isPlaying': function(val) { 
-            if(val==0) { this.play(); }
+            /*if(val==0) { this.play(); }*/
+            if(val==0){
+                this.$emit('restartEvent');
+            }
         }
     },
     
     computed: {
+        beatPlaying() {
+            return this.isPlaying;
+        },
         my_beat_duration() {
-            return this.total_duration/this.num_beats;
+            return Number(this.total_duration/(this.num_beats));
         },
         cssVars() {
             var layerWidth = 500;
             var margin = 5;
             var borderKey = 3;
             var keyHeight = 18;
+            var barWidth = 500;
             return {
-                '--columnWidth': (layerWidth - this.num_beats*2*margin)/this.num_beats + 'px',
+                '--columnWidth': (layerWidth - this.num_beats*2*margin)/(this.num_beats*this.n_bars) + 'px',
                 '--columnHeight' : this.tonesInScale*(keyHeight + 2*borderKey) + 'px',
+                '--barWidth': (barWidth)/this.n_bars + 'px'
             }
         },
     },
 
     methods: {
         next() {
-            this.isPlaying = (this.isPlaying + 1) % (this.num_beats);
+            this.isPlaying = (this.isPlaying + 1) % (this.num_beats*this.n_bars);
         },
         stop() {
             clearInterval(this.my_clock)
@@ -553,6 +564,9 @@ let sequencerComponent = {
             <div class="view-box">\
                 <p class="viewer">BPM: {{bpm}}</p>\
                 <p class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</p>\
+                <p class="viewer">Bars: {{n_bars}}</p>\
+                <button id="remove-btn" @click="if(n_bars<4){n_bars++}"> + </button>\
+                <button id="addKey-btn" @click="if(n_bars>1){n_bars--}"> - </button>\
             </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
@@ -568,10 +582,12 @@ let sequencerComponent = {
                     :num_beats="layer.num_beats"\
                     :total_duration="total_duration"\
                     :inst_id="inst_id"\
+                    :n_bars="n_bars"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="layer.num_beats++"\
-                    @removeKeyEvent="layer.num_beats--">\
-                </layer-component>\
+                    @removeKeyEvent="layer.num_beats--"\
+                    @restartEvent="restart(index)"\
+                ></layer-component>\
             </div>\
         </div>\
     ',
@@ -589,22 +605,23 @@ let sequencerComponent = {
             layers: [
                 {
                     id: 0,
-                    num_beats: 3
+                    num_beats: 3,
                 },
                 {
                     id: 1,
-                    num_beats: 2
+                    num_beats: 2,
                 },
             ],
             inst_id: 1,
-            inst_name: ['nome_strumento1','nome_strumento2','nome_strumento3'] /*mettere nomi degli strumenti*/
+            inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
+            n_bars:1
         }
     },
 
     computed: {
         total_duration() {
             if(this.layers[0]){
-                return this.layers[0].num_beats*60000/this.bpm
+                return this.layers[0].num_beats*60000/this.bpm;
             }
         }
     },
@@ -637,6 +654,12 @@ let sequencerComponent = {
                 this.$refs.layers_refs[idx].stop()
             }
             this.playing = false
+        },
+        restart(index) {
+            if(index==0){
+                console.log("Restart")
+                this.playAll();
+            }
         },
         instSelected(inst_id) {
             this.inst_id=inst_id
@@ -695,8 +718,50 @@ var synth2 = new Tone.DuoSynth({
     }
     }
     }).toDestination();
-var synth3 = new Tone.PluckSynth({
-    attackNoise  : 1 ,
-    dampening  : 8000 ,
-    resonance  : 0.9
-    }).toDestination();
+
+/*--------Firestore config for drum-----------*/
+import { initializeApp } from "firebase/app";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyB23PkWGtyU3LFIYBy8uiKT0RM9gUYrkXk",
+  authDomain: "actam21.firebaseapp.com",
+  projectId: "actam21",
+  storageBucket: "actam21.appspot.com",
+  messagingSenderId: "745216869995",
+  appId: "1:745216869995:web:7ad950861a786b73b8d32e",
+  measurementId: "G-N1VC6LWMBM"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+
+// Get a reference to the storage service, which is used to create references in your storage bucket
+const storage = getStorage(firebaseApp);
+
+var drum = Array(8);
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_KICK_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[0] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_SNARE_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[1] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_TOM_HIGH_CLEAN_CFC.wav')).then(function(url) {
+        drum[2] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_TOM_MID_CLEAN_CFC.wav')).then(function(url) {
+        drum[3] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_H-CL_CLEAN_CFC.wav')).then(function(url) {
+        drum[4] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_H-OH_CLEAN_CFC.wav')).then(function(url) {
+        drum[5] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_CYM_01_CLEAN_CFC.wav')).then(function(url) {
+        drum[6] = new Tone.Player(url).toDestination();
+    })
+    getDownloadURL(ref(storage,'gs://actam21.appspot.com/808_COW_CLEAN_CFC.wav')).then(function(url) {
+        drum[7] = new Tone.Player(url).toDestination();
+    })

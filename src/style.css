@@ -82,10 +82,11 @@
 .keyboard {
     display: inline-flex;
     position: relative;
-    width: 500px;
+    width: var(--barWidth);
     height: auto;
     border-radius: 10px;
     background-color: rgb(199, 202, 0);
+    border:3px solid rgb(19, 109, 116);
 }
 
 .column {
