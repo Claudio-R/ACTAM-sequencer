@@ -1,11 +1,6 @@
 #app {
-
-    /*location*/
-    position: relative;
-    
     /*size*/
-    width: 800px;
-    height: 50%;
+    width: min-content;
     
     /*aspect*/
     border: 2px solid rgb(199, 202, 0);
@@ -18,19 +13,17 @@
 /******************************************* TOP BOX *******************************************/
 .view-box {
     display: inline-flex;
-    width: auto;
-    height: auto;
     border-radius: 10px;
     margin-top: 10px;
     margin-left: 10px;
-    padding: 2px;
+    padding: 10px;
     background-color: beige;
 }
+
 .viewer{
-    margin: 10px;
-    padding: 2px;
     width: auto;
     height: 80%;
+    margin-right: 10px;
     border: 2px solid rgb(216, 216, 178);
     background-color: bisque;
 }
@@ -42,14 +35,10 @@
     border-radius: 10px;
     margin: 10px;
     height: auto;
-}
-.text-input {
-    margin: 5px;
+    padding: 10px;
 }
 
-.btn-1{
-    margin: 5px;
-}
+
 
 /******************************************* LAYER *******************************************/
 #layers-container {
@@ -164,6 +153,14 @@
     background-color: beige;
 }
 
+.unified {
+    margin: 10px;
+    padding: 5px;
+    background-color: #e2c957;
+    border: rgb(177, 161, 15) solid 3px;
+    border-radius: 10px;
+}
+
 #buttons{
     display: inline-flex;
     margin-top: 10px;
@@ -181,16 +178,20 @@
     display: inline-flex;
     padding: 0;
     margin-left: 10px;
-    margin-top: 0px;
+}
+
+.octave-sound-controller{
+    display: inline-flex;
+    margin-left: 10px;
+}
+
+.octave-sound-controller #octave-selector {
+    margin: 10px;
+    margin-left: 0px;
 }
 
 .octave-viewer{
-    margin: none;
-    position: relative;
-    top: 50%;
     padding: 2px;
-    width: auto;
-    height: 80%;
     border: 2px solid rgb(216, 216, 178);
     background-color: bisque;
 }
@@ -199,8 +200,20 @@
     margin: 10px;
 }
 
+.octave-sound-controller .layer-sound-controller{
+    margin: 10px 10px 0px 0px;
+}
+
 .monitor-btn {
     background-color: rgba(147, 238, 110, 0.849);
+}
+
+.prelisten-btn {
+    background-color: rgb(0, 161, 86);
+}
+
+.prelistenActive {
+    background-color: rgb(0, 255, 21);
 }
 .mute-btn {
     background-color: rgb(255, 166, 0);
@@ -226,6 +239,12 @@
     width: 90px;
     height: 20px;
     margin: 0px;
+    text-align: center;
+}
+
+.remove-btn-unified {
+    background-color: rgb(194, 194, 194);
+    margin-top: 2px;
     text-align: center;
 }
 
