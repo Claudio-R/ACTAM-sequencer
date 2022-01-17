@@ -37,7 +37,34 @@
     border-radius: 10px;
     margin: 10px;
     height: auto;
+    text-align: justify;
+    -ms-text-justify: distribute-all-lines;
+    text-justify: distribute-all-lines;
 }
+
+.controller-container {
+    width: 200px;
+    margin: 10px;
+    height: auto;
+    vertical-align: top;
+    display: inline-block;
+    *display: inline;
+    zoom: 1
+}
+
+.stretch {
+    width: 100%;
+    display: inline-block;
+    font-size: 0;
+    line-height: 0
+}
+
+.controller-labels {
+    text-align: center;
+    margin: 0px;
+    margin-bottom: 10px;
+}
+
 .text-input {
     margin: 5px;
 }
@@ -46,20 +73,37 @@
     margin: 5px;
 }
 
+.inst-container {
+    width:33%;
+    margin:0px;
+    display: inline-block;
+}
+
 .inst_sel {
     /* location */
     position: relative;
     display: inline-block;
-    top: 6px;
+    top: 0px;
     /* aspect */
-    width: calc(14px - 2 * var(--inst_sel_border));
-    height: calc(14px - 2 * var(--inst_sel_border));
+    width: calc(18px - 2 * var(--inst_sel_border));
+    height: calc(18px - 2 * var(--inst_sel_border));
     background-color: var(--inst_sel_color);
     padding: none;
     border: var(--inst_sel_border) solid #0000004d;
     border-radius: 100%;
-    margin: 5px;
+    margin: 0px;
+    left: 25%;
+    margin-top: 5px;
+    margin-bottom: 5px;
 
+}
+
+.slider {
+    position: relative;
+    bottom: 0px;
+    color: var(--slidercolor);
+    width: 50px;
+    height: 8px;
 }
 
 .checkbox {

@@ -9,15 +9,23 @@ Vue.config.devtools = true
 let instSelComponent = {
 
     template:'\
-            <div class="inst_sel"\
-                @click="instSelection"\
-                :style="cssVars">\
+            <div class="inst-container">\
+                <div class="inst_sel"\
+                    @click="instSelection"\
+                    :style="cssVars">\
+                </div>\
+                <div>\
+                <input class="slider" type="range" min="0" max="100" v-model="volume" :style="cssVars">\
+                <input class="slider" type="range" min="0" max="100" v-model="note_duration" :style="cssVars">\
+                </div>\
            </div>\
     ',
 
     props:{
         id: { type: Number, },
-        selected_inst:{ type: Number, }
+        selected_inst:{ type: Number, },
+        volume:{default: 75},
+        note_duration:{default: 0}
     },
 
     methods: {
@@ -34,31 +42,42 @@ let instSelComponent = {
             if(this.id==this.selected_inst){
             return{
                 '--inst_sel_color': activeCSScolors[this.id-1],
-                '--inst_sel_border': '0px'
+                '--inst_sel_border': '0px',
+                '--slidercolor': passiveCSScolors[this.id-1],
             }}
             return{
                 '--inst_sel_color': passiveCSScolors[this.id-1],
-                '--inst_sel_border': '2px'
+                '--inst_sel_border': '2px',
+                '--slidercolor': passiveCSScolors[this.id-1],
             }
-        }
+        },
     }
 }
 
 let controllerComponent = {
     template:'\
        <div class="controller">\
-            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-            <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
-            <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
-            <label>Instrument:</label>\
-            <inst-component v-for="k in num_inst"\
-                :id="k"\
-                :selected_inst=selected_inst\
-                @instSelectionEvent="instSelection">\
-            </inst-component>\
-            <label>Play-on-touch:</label>\
-            <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
+            <div class="controller-container">\
+                <h1 class="controller-labels">Setup</h1>\
+                <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
+                <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
+                <label>Play-on-touch:</label>\
+                <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
+            </div>\
+            <div class="controller-container">\
+                <h1 class="controller-labels">Loop</h1>\
+                <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
+                <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
+            </div>\
+            <div class="controller-container">\
+                <h1 class="controller-labels">Synths</h1>\
+                <inst-component v-for="k in num_inst"\
+                    :id="k"\
+                    :selected_inst=selected_inst\
+                    @instSelectionEvent="instSelection">\
+                </inst-component>\
+            </div>\
+            <span class="stretch"></span>\
         </div>\
     ',
 

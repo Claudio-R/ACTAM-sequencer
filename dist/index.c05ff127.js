@@ -528,9 +528,15 @@ var _storage = require("firebase/storage");
 */ Vue.config.devtools = true;
 let instSelComponent = {
     template: '\
-            <div class="inst_sel"\
-                @click="instSelection"\
-                :style="cssVars">\
+            <div class="inst-container">\
+                <div class="inst_sel"\
+                    @click="instSelection"\
+                    :style="cssVars">\
+                </div>\
+                <div>\
+                <input class="slider" type="range" min="0" max="100" v-model="volume" :style="cssVars">\
+                <input class="slider" type="range" min="0" max="100" v-model="note_duration" :style="cssVars">\
+                </div>\
            </div>\
     ',
     props: {
@@ -539,6 +545,12 @@ let instSelComponent = {
         },
         selected_inst: {
             type: Number
+        },
+        volume: {
+            default: 75
+        },
+        note_duration: {
+            default: 0
         }
     },
     methods: {
@@ -561,11 +573,13 @@ let instSelComponent = {
             ];
             if (this.id == this.selected_inst) return {
                 '--inst_sel_color': activeCSScolors[this.id - 1],
-                '--inst_sel_border': '0px'
+                '--inst_sel_border': '0px',
+                '--slidercolor': passiveCSScolors[this.id - 1]
             };
             return {
                 '--inst_sel_color': passiveCSScolors[this.id - 1],
-                '--inst_sel_border': '2px'
+                '--inst_sel_border': '2px',
+                '--slidercolor': passiveCSScolors[this.id - 1]
             };
         }
     }
@@ -573,16 +587,27 @@ let instSelComponent = {
 let controllerComponent = {
     template: '\
        <div class="controller">\
-            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-            <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
-            <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
-            <label>Instrument:</label>\
-            <inst-component v-for="k in num_inst"\
-                :id="k"\
-                :selected_inst=selected_inst\
-                @instSelectionEvent="instSelection">\
-            </inst-component>\
+            <div class="controller-container">\
+                <h1 class="controller-labels">Setup</h1>\
+                <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
+                <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
+                <label>Play-on-touch:</label>\
+                <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
+            </div>\
+            <div class="controller-container">\
+                <h1 class="controller-labels">Loop</h1>\
+                <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
+                <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
+            </div>\
+            <div class="controller-container">\
+                <h1 class="controller-labels">Synths</h1>\
+                <inst-component v-for="k in num_inst"\
+                    :id="k"\
+                    :selected_inst=selected_inst\
+                    @instSelectionEvent="instSelection">\
+                </inst-component>\
+            </div>\
+            <span class="stretch"></span>\
         </div>\
     ',
     components: {
@@ -599,6 +624,7 @@ let controllerComponent = {
         return {
             newInput: '',
             bpm_value: '',
+            pot: true,
             num_inst: 3
         };
     },
@@ -622,6 +648,9 @@ let controllerComponent = {
         instSelection (inst_id) {
             this.$emit('instSelectionEvent', inst_id);
             this.selected_inst = inst_id;
+        },
+        potChange () {
+            this.$emit('potEvent', !this.pot);
         }
     }
 };
@@ -729,7 +758,14 @@ let keyComponent = {
         state3: {
             default: false
         },
+        pot: {
+            type: Boolean
+        },
         beatMuted: {
+            type: Boolean,
+            default: false
+        },
+        layerMuted: {
             type: Boolean,
             default: false
         },
@@ -750,7 +786,7 @@ let keyComponent = {
     },
     watch: {
         'isPlaying': function() {
-            if (!this.beatMuted && this.isPlaying == this.beatId) this.playKey();
+            if (!this.layerMuted && !this.beatMuted && this.isPlaying == this.beatId) this.playKey();
         }
     },
     computed: {
@@ -815,15 +851,15 @@ let keyComponent = {
             switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1;
-                    if (!this.beatMuted && this.state1) this.$emit('playSound1Event', this.keyId);
+                    if (!this.layerMuted && !this.beatMuted && this.state1 && this.pot) this.$emit('playSound1Event', this.keyId);
                     break;
                 case 2:
                     this.state2 = !this.state2;
-                    if (!this.beatMuted && this.state2) this.$emit('playSound2Event', this.keyId);
+                    if (!this.layerMuted && !this.beatMuted && this.state2 && this.pot) this.$emit('playSound2Event', this.keyId);
                     break;
                 case 3:
                     this.state3 = !this.state3;
-                    if (!this.beatMuted && this.state3) this.$emit('playSound3Event', this.keyId);
+                    if (!this.layerMuted && !this.beatMuted && this.state3 && this.pot) this.$emit('playSound3Event', this.keyId);
                     break;
             }
         },
@@ -844,18 +880,6 @@ let keyComponent = {
         }
     }
 };
-let beatControllerComponent = {
-    template: '\
-        <div id="beat-controller">\
-            <button class="beat-btn" @click="$emit(\'monitorBeatEvent\')">P</button>\
-            <button class="beat-btn" :class="{ muteActive : beatMuted }" @click="$emit(\'muteBeatEvent\')">M</button>\
-            <button class="beat-btn" @click="$emit(\'clearBeatEvent\')">C</button>\
-        </div>\
-    ',
-    props: [
-        'beatMuted'
-    ]
-};
 let columnComponent = {
     template: '\
         <div>\
@@ -866,29 +890,31 @@ let columnComponent = {
                 :inst_selected="inst_selected"\
                 :beatId="beatId"\
                 :keyId=tonesInScale-k\
-                :beatMuted=beatMuted\
+                :beatMuted="beatMuted"\
+                :layerMuted="layerMuted"\
+                :pot="pot"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
             ></key-component>\
-            <beat-controller-component\
-                :beatMuted="beatMuted"\
-                @monitorBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"\
-                @muteBeatEvent="beatMuted = !beatMuted"\
-                @clearBeatEvent="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].clearKey() }"\
-            ></beat-controller-component>\
+            <div id="beat-controller">\
+                <button class="beat-btn monitor-btn" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }">P</button>\
+                <button class="beat-btn mute-btn" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted">M</button>\
+                <button class="beat-btn clear-btn" @click="clearAllKeys">C</button>\
+            </div>\
         </div>\
     ',
     components: {
-        'key-component': keyComponent,
-        'beat-controller-component': beatControllerComponent
+        'key-component': keyComponent
     },
     props: [
         'beatId',
+        'layerMuted',
         'tonesInScale',
         "inst_selected",
         'isPlaying',
-        'scale_keyboard'
+        'scale_keyboard',
+        'pot'
     ],
     data () {
         return {
@@ -925,6 +951,9 @@ let columnComponent = {
             key_state2 = newvar.key_state2;
             key_state3 = newvar.key_state3;
             for(j = 0; j < this.tonesInScale; j++)this.$refs.keys_refs[j].setKey(key_state1[j], key_state2[j], key_state3[j]);
+        },
+        clearAllKeys () {
+            for(var idx = 0; idx < this.tonesInScale; idx++)this.$refs.keys_refs[idx].clearKey();
         }
     }
 };
@@ -942,15 +971,17 @@ let layerComponent = {
             <div v-for="j in n_bars">\
                 <div class="keyboard">\
                     <column-component v-for="k in num_beats"\
-                        ref="columns_refs"\
                         class="column" :style="cssVars"\
+                        ref = beats_refs\
                         :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
                         :beatId="k*j-1-(k-num_beats)*(j-1)"\
+                        :layerMuted="layerMuted"\
                         :isPlaying="isPlaying"\
                         :inst_selected="inst_id"\
                         :scale_keyboard="scale_keyboard"\
-                        :tonesInScale="tonesInScale">\
-                    </column-component>\
+                        :tonesInScale="tonesInScale"\
+                        :pot="pot"\
+                    ></column-component>\
                 </div>\
             </div>\
             <div class="layer-controller">\
@@ -966,9 +997,13 @@ let layerComponent = {
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
                 <div id="octave-selector">\
-                    <p class="octave-viewer">Octave: {{octave}}</p>\
-                    <button id="addKey-btn" @click="moreOctave"> + </button>\
-                    <button id="removeKey-btn" @click="lessOctave"> - </button>\
+                    <div class="octave-viewer">Octave: {{octave}} </div>\
+                    <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button class="layer-btn" @click="lessOctave"> - </button>\
+                </div>\
+                <div class="layer-sound-controller">\
+                    <button class="layer-btn mute-btn" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted">M</button>\
+                    <button class="layer-btn clear-btn" @click="for(var idx=0; idx<$refs.beats_refs.length; idx++) { $refs.beats_refs[idx].clearAllKeys() }">C</button>\
                 </div>\
             </div>\
         </div>\
@@ -976,14 +1011,14 @@ let layerComponent = {
     components: {
         'column-component': columnComponent,
         'scale-selector-component': scaleSelectorComponent,
-        'key-selector-component': keySelectorComponent,
-        'beat-controller-component': beatControllerComponent
+        'key-selector-component': keySelectorComponent
     },
     props: {
         num_beats: Number,
         total_duration: Number,
         inst_id: Number,
         n_bars: Number,
+        pot: Boolean,
         key: {
             default: 'C'
         },
@@ -1021,12 +1056,13 @@ let layerComponent = {
             my_clock: '',
             tonesInScale: 8,
             keyboard: '',
-            octave: 4
+            octave: 4,
+            layerMuted: false
         };
     },
     watch: {
         'isPlaying': function(val) {
-            /*if(val==0) { this.play(); }*/ if (val == 0) this.$emit('restartEvent');
+            if (val == 0) this.$emit('restartEvent');
         }
     },
     computed: {
@@ -1150,8 +1186,8 @@ let layerComponent = {
             Vue.nextTick(()=>{
                 //column_states = Array(this.num_beats)
                 for(i = 0; i < this.num_beats; i++){
-                    newvar = this.$refs.columns_refs[i].getKeyProps();
-                    this.$refs.columns_refs[i + (this.n_bars - 1) * this.num_beats].setColumn(newvar);
+                    newvar = this.$refs.beats_refs[i].getKeyProps();
+                    this.$refs.beats_refs[i + (this.n_bars - 1) * this.num_beats].setColumn(newvar);
                 //column_states[i]=(newvar)
                 }
             });
@@ -1174,6 +1210,7 @@ let sequencerComponent = {
                 @playAllEvent="playAll"\
                 @stopAllEvent="stopAll"\
                 @instSelectionEvent="instSelected"\
+                @potEvent="potGlobalChange"\
             ></controller-component>\
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
@@ -1183,9 +1220,10 @@ let sequencerComponent = {
                     :total_duration="total_duration"\
                     :inst_id="inst_id"\
                     :n_bars="n_bars"\
+                    :pot="pot"\
                     @remove="layers.splice(index,1)"\
-                    @addKeyEvent="layer.num_beats++"\
-                    @removeKeyEvent="layer.num_beats--"\
+                    @addKeyEvent="if(!systemPlaying)layer.num_beats++"\
+                    @removeKeyEvent="if(!systemPlaying)layer.num_beats--"\
                     @restartEvent="restart(index)"\
                 ></layer-component>\
             </div>\
@@ -1197,6 +1235,7 @@ let sequencerComponent = {
     },
     data () {
         return {
+            systemPlaying: false,
             bpm: 120,
             nextId: 2,
             inst_id: 1,
@@ -1216,7 +1255,8 @@ let sequencerComponent = {
                 'nome_strumento2',
                 'drum: TR-808'
             ],
-            /*mettere nomi degli strumenti*/ n_bars: 1
+            /*mettere nomi degli strumenti*/ n_bars: 1,
+            pot: true
         };
     },
     computed: {
@@ -1236,13 +1276,13 @@ let sequencerComponent = {
             this.bpm = bpm_input;
         },
         /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */ playAll () {
+            this.systemPlaying = true;
             for(idx in this.layers)this.$refs.layers_refs[idx].isPlaying = 0;
-            this.playing = true;
             for(idx in this.layers)this.$refs.layers_refs[idx].play();
         },
         stopAll () {
+            this.systemPlaying = false;
             for(idx in this.layers)this.$refs.layers_refs[idx].stop();
-            this.playing = false;
         },
         restart (index) {
             if (index == 0) {
@@ -1255,6 +1295,9 @@ let sequencerComponent = {
         },
         addBar () {
             for(idx in this.layers)this.$refs.layers_refs[idx].addLBar();
+        },
+        potGlobalChange (pot) {
+            this.pot = pot;
         }
     }
 };
