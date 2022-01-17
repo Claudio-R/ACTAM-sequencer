@@ -491,15 +491,14 @@ let layerComponent = {
             return Number(this.total_duration/(this.num_beats));
         },
         cssVars() {
-            var layerWidth = 500;
+            var layerWidth = 1200;
+            //var layerWidth = 1200/this.num_bars; to make it adaptive
             var margin = 5;
             var borderKey = 3;
             var keyHeight = 18;
-            var barWidth = 500;
             return {
-                '--columnWidth': (layerWidth - this.num_beats*2*margin)/(this.num_beats*this.n_bars) + 'px', //157
+                '--columnWidth': (layerWidth - this.num_beats*2*margin)/(this.num_beats) + 'px', //157
                 '--columnHeight' : this.tonesInScale*(keyHeight + 2*borderKey) + 'px',
-                '--barWidth': (barWidth)/this.n_bars + 'px'
             }
         },
     },
@@ -628,7 +627,7 @@ let sequencerComponent = {
                 <div class="octave-sound-controller">\
                     <div id="octave-selector">\
                         <div class="octave-viewer">Octave: {{octave}} </div>\
-                        <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
+                        <button class="layer-btn" @click="moreOctave"> + </button>\
                         <button class="layer-btn" @click="lessOctave"> - </button>\
                     </div>\
                     <div class="layer-sound-controller">\
@@ -651,8 +650,8 @@ let sequencerComponent = {
                     :layerMuted="sequencerMuted"\
                     :unifiedControl="unifiedControl"\
                     @remove="layers.splice(index,1)"\
-                    @addKeyEvent="if(!systemPlaying)layer.num_beats++"\
-                    @removeKeyEvent="if(!systemPlaying)layer.num_beats--"\
+                    @addKeyEvent="if(!systemPlaying && layer.num_beats < 12 )layer.num_beats++"\
+                    @removeKeyEvent="if(!systemPlaying && layer.num_beats > 1 )layer.num_beats--"\
                     @restartEvent="restart(index)"\
                 ></layer-component>\
             </div>\
@@ -703,6 +702,7 @@ let sequencerComponent = {
 
     methods: {
         addLayer(num_beats_input) {
+            if(num_beats_input > 12) num_beats_input = 12;
             this.layers.push(
                 {   
                     id: this.nextId,
