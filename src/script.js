@@ -57,6 +57,8 @@ let controllerComponent = {
                 :selected_inst=selected_inst\
                 @instSelectionEvent="instSelection">\
             </inst-component>\
+            <label>Play-on-touch:</label>\
+            <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
         </div>\
     ',
 
@@ -75,6 +77,7 @@ let controllerComponent = {
         return {
             newInput: '',
             bpm_value: '',
+            pot: true,
             num_inst: 3,
         }
     },
@@ -101,6 +104,9 @@ let controllerComponent = {
            this.$emit('instSelectionEvent', inst_id)
            this.selected_inst=inst_id
        },
+       potChange(){
+        this.$emit('potEvent', !this.pot)
+       }
     }
 };
 
@@ -187,6 +193,7 @@ let keyComponent = {
         state1: { default: false },
         state2: { default: false },
         state3: { default: false },
+        pot: {type: Boolean},
         
         beatMuted: { type: Boolean, default: false },
         layerMuted: { type: Boolean, default: false },
@@ -268,17 +275,17 @@ let keyComponent = {
             switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1
-                    if(!this.layerMuted && !this.beatMuted && this.state1){
+                    if(!this.layerMuted && !this.beatMuted && this.state1 && this.pot){
                         this.$emit('playSound1Event',this.keyId)
                     } break;
                 case 2: 
                     this.state2 = !this.state2
-                    if(!this.layerMuted && !this.beatMuted && this.state2){
+                    if(!this.layerMuted && !this.beatMuted && this.state2 && this.pot){
                         this.$emit('playSound2Event',this.keyId)
                     } break; 
                 case 3: 
                     this.state3 = !this.state3
-                    if(!this.layerMuted && !this.beatMuted && this.state3){
+                    if(!this.layerMuted && !this.beatMuted && this.state3 && this.pot){
                         this.$emit('playSound3Event',this.keyId)
                     } break;
             } 
@@ -322,6 +329,7 @@ let columnComponent = {
                 :keyId=tonesInScale-k\
                 :beatMuted="beatMuted"\
                 :layerMuted="layerMuted"\
+                :pot="pot"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
@@ -338,7 +346,7 @@ let columnComponent = {
         'key-component' : keyComponent,
     },
 
-    props : ['beatId','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard'],
+    props : ['beatId','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard','pot'],
 
     data() {
         return {
@@ -406,6 +414,7 @@ let layerComponent = {
                         :inst_selected="inst_id"\
                         :scale_keyboard="scale_keyboard"\
                         :tonesInScale="tonesInScale"\
+                        :pot="pot"\
                     ></column-component>\
                 </div>\
             </div>\
@@ -445,6 +454,7 @@ let layerComponent = {
         total_duration: Number,
         inst_id: Number,
         n_bars: Number,
+        pot: Boolean,
         
         key: { default: 'C' },
         scale: { default:'Major' },
@@ -599,6 +609,7 @@ let sequencerComponent = {
                 @playAllEvent="playAll"\
                 @stopAllEvent="stopAll"\
                 @instSelectionEvent="instSelected"\
+                @potEvent="potGlobalChange"\
             ></controller-component>\
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
@@ -608,6 +619,7 @@ let sequencerComponent = {
                     :total_duration="total_duration"\
                     :inst_id="inst_id"\
                     :n_bars="n_bars"\
+                    :pot="pot"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="if(!systemPlaying)layer.num_beats++"\
                     @removeKeyEvent="if(!systemPlaying)layer.num_beats--"\
@@ -640,7 +652,8 @@ let sequencerComponent = {
             ],
             inst_id: 1,
             inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
-            n_bars:1
+            n_bars:1,
+            pot:true
         }
     },
 
@@ -694,6 +707,9 @@ let sequencerComponent = {
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].addLBar()
             }
+        },
+        potGlobalChange(pot){
+            this.pot=pot
         }
     }
 }

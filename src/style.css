@@ -46,12 +46,6 @@
     margin: 5px;
 }
 
-/******************************************* LAYER *******************************************/
-#layers-container {
-    margin: 10px;
-    background-color: rgb(28, 140, 148);
-}
-
 .inst_sel {
     /* location */
     position: relative;
@@ -66,6 +60,18 @@
     border-radius: 100%;
     margin: 5px;
 
+}
+
+.checkbox {
+    top: 50%;
+    height: 15px;
+    width: 15px;
+    border-radius: 50%;
+}
+/******************************************* LAYER *******************************************/
+#layers-container {
+    margin: 10px;
+    background-color: rgb(28, 140, 148);
 }
 
 .layer{
