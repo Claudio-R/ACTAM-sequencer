@@ -15,7 +15,7 @@ let instSelComponent = {
                     :style="cssVars">\
                 </div>\
                 <div>\
-                <input class="slider" type="range" min="0" max="100" v-model="volume" :style="cssVars">\
+                <input class="slider" type="range" min="-40" max="0" v-model="volume" :style="cssVars">\
                 <input class="slider" type="range" min="0" max="100" v-model="note_duration" :style="cssVars">\
                 </div>\
            </div>\
@@ -24,7 +24,7 @@ let instSelComponent = {
     props:{
         id: { type: Number, },
         selected_inst:{ type: Number, },
-        volume:{default: 75},
+        volume:{default: 0},
         note_duration:{default: 0}
     },
 
@@ -51,7 +51,22 @@ let instSelComponent = {
                 '--slidercolor': passiveCSScolors[this.id-1],
             }
         },
-    }
+    },
+    watch: {
+        'volume': function() {
+            if(this.id==1) { 
+                synth1.volume.value = this.volume;
+            } 
+            if(this.id==2) { 
+                synth2.volume.value = this.volume;
+            }
+            if(this.id==3) { 
+                for(i=0;i<8;i++){
+                drum[i].volume.value = this.volume;
+                }
+            }
+        }
+    },
 }
 
 let controllerComponent = {
