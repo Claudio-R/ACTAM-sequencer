@@ -96,8 +96,6 @@ let controllerComponent = {
                 @instSelectionEvent="instSelection"\
                 @durationChangeEvent="emitDuration">\
             </inst-component>\
-            <label>Play-on-touch:</label>\
-            <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
         </div>\
     ',
 
@@ -115,7 +113,6 @@ let controllerComponent = {
         return {
             newInput: '',
             bpm_value: '',
-            pot: true,
             num_inst: 3,
         }
     },
@@ -141,9 +138,6 @@ let controllerComponent = {
         instSelection(inst_id) {
            this.$emit('instSelectionEvent', inst_id)
            this.selected_inst=inst_id
-       },
-       potChange(){
-        this.$emit('potEvent', !this.pot)
        },
        emitDuration(inst_id,duration){
         this.$emit('durationEvent', inst_id, duration)
@@ -317,17 +311,17 @@ let keyComponent = {
             switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1
-                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state1 && this.pot){
+                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state1){
                         this.$emit('playSound1Event',this.keyId)
                     } break;
                 case 2: 
                     this.state2 = !this.state2
-                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state2 && this.pot){
+                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state2){
                         this.$emit('playSound2Event',this.keyId)
                     } break; 
                 case 3: 
                     this.state3 = !this.state3
-                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state3 && this.pot){
+                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state3){
                         this.$emit('playSound3Event',this.keyId)
                     } break;
             } 
@@ -372,7 +366,6 @@ let columnComponent = {
                 :prelistenKey="prelistenBeat"\
                 :beatMuted="beatMuted"\
                 :layerMuted="layerMuted"\
-                :pot="pot"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
@@ -389,7 +382,7 @@ let columnComponent = {
         'key-component' : keyComponent,
     },
 
-    props : ['beatId','prelistenBeat','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard','pot','duration'],
+    props : ['beatId','prelistenBeat','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard','duration'],
 
     data() {
         return {
@@ -460,7 +453,6 @@ let layerComponent = {
                         :inst_selected="inst_id"\
                         :scale_keyboard="scale_keyboard"\
                         :tonesInScale="tonesInScale"\
-                        :pot="pot"\
                         :duration="duration"\
                     ></column-component>\
                 </div>\
@@ -507,7 +499,6 @@ let layerComponent = {
         prelistenLayer: {default: true},
         layerMuted: {default:false},
         unifiedControl: { default: true } ,
-        pot: Boolean,
         duration: Array,
         
         key: { default: 'C' },
@@ -670,7 +661,6 @@ let sequencerComponent = {
                 @stopAllEvent="stopAll"\
                 @instSelectionEvent="instSelected"\
                 @unifiedControllerEvent="unifiedControl=!unifiedControl"\
-                @potEvent="potGlobalChange"\
                 @durationEvent="changeDuration"\
             ></controller-component>\
             \
@@ -706,7 +696,6 @@ let sequencerComponent = {
                     :prelistenLayer="prelistenSystem"\
                     :layerMuted="sequencerMuted"\
                     :unifiedControl="unifiedControl"\
-                    :pot="pot"\
                     :duration="duration"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="if(!systemPlaying && layer.num_beats < 12 )layer.num_beats++"\
@@ -748,7 +737,6 @@ let sequencerComponent = {
             inst_id: 1,
             inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
             n_bars:1,
-            pot:true,
             duration:["16n","16n"]
         }
     },
@@ -837,9 +825,6 @@ let sequencerComponent = {
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].lessOctave()
             }
-        },
-        potGlobalChange(pot){
-            this.pot=pot
         },
         changeDuration(inst_id,duration){
             this.duration[inst_id-1]=20-duration*4+"n"
