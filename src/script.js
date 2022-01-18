@@ -24,7 +24,7 @@ let instSelComponent = {
                         <input type="range" min="-40" max="3" v-model="volume"></input>\
                         <div v-if="id!=3">\
                         <label>Duration:<label>\
-                        <input type="range" min="0" max="5" v-model="duration"></input>\
+                        <input type="range" min="0" max="4" v-model="duration"></input>\
                         </div>\
                 </div>\
             </div>\
@@ -73,6 +73,9 @@ let instSelComponent = {
                 drum[i].volume.value = this.volume;
                 }
             }
+        },
+        'duration': function() {
+            this.$emit('durationChangeEvent', this.id, this.duration)
         }
     },
 }
@@ -88,7 +91,8 @@ let controllerComponent = {
             <inst-component v-for="k in num_inst"\
                 :id="k"\
                 :selected_inst=selected_inst\
-                @instSelectionEvent="instSelection">\
+                @instSelectionEvent="instSelection"\
+                @durationChangeEvent="emitDuration">\
             </inst-component>\
             <label>Play-on-touch:</label>\
             <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
@@ -139,6 +143,9 @@ let controllerComponent = {
        },
        potChange(){
         this.$emit('potEvent', !this.pot)
+       },
+       emitDuration(inst_id,duration){
+        this.$emit('durationEvent', inst_id, duration)
        }
     }
 };
@@ -379,7 +386,7 @@ let columnComponent = {
         'key-component' : keyComponent,
     },
 
-    props : ['beatId','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard','pot'],
+    props : ['beatId','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard','pot','duration'],
 
     data() {
         return {
@@ -389,10 +396,10 @@ let columnComponent = {
 
     methods : {
         playInst1(keyId){
-            synth1.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
+            synth1.triggerAttackRelease(this.scale_keyboard[keyId],this.duration[0])
         },
         playInst2(keyId){
-            synth2.triggerAttackRelease(this.scale_keyboard[keyId],"16n")
+            synth2.triggerAttackRelease(this.scale_keyboard[keyId],this.duration[1])
         },
         playInst3(keyId){
             drum[keyId].start();
@@ -448,6 +455,7 @@ let layerComponent = {
                         :scale_keyboard="scale_keyboard"\
                         :tonesInScale="tonesInScale"\
                         :pot="pot"\
+                        :duration="duration"\
                     ></column-component>\
                 </div>\
             </div>\
@@ -488,11 +496,12 @@ let layerComponent = {
         inst_id: Number,
         n_bars: Number,
         pot: Boolean,
+        duration: Array,
         
         key: { default: 'C' },
         scale: { default:'Major' },
         scale_keyboard : { default: ["C4","D4","E4","F4","G4","A4","B4","C5"] },
-        drum_keyboard : { default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"] }
+        drum_keyboard : { default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"] },
     },
     
     data() {
@@ -643,6 +652,7 @@ let sequencerComponent = {
                 @stopAllEvent="stopAll"\
                 @instSelectionEvent="instSelected"\
                 @potEvent="potGlobalChange"\
+                @durationEvent="changeDuration"\
             ></controller-component>\
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
@@ -653,6 +663,7 @@ let sequencerComponent = {
                     :inst_id="inst_id"\
                     :n_bars="n_bars"\
                     :pot="pot"\
+                    :duration="duration"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="if(!systemPlaying)layer.num_beats++"\
                     @removeKeyEvent="if(!systemPlaying)layer.num_beats--"\
@@ -686,7 +697,8 @@ let sequencerComponent = {
             inst_id: 1,
             inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
             n_bars:1,
-            pot:true
+            pot:true,
+            duration:["16n","16n"]
         }
     },
 
@@ -743,6 +755,9 @@ let sequencerComponent = {
         },
         potGlobalChange(pot){
             this.pot=pot
+        },
+        changeDuration(inst_id,duration){
+            this.duration[inst_id-1]=20-duration*4+"n"
         }
     }
 }
