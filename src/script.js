@@ -614,12 +614,16 @@ let layerComponent = {
             }
         },
         moreOctave(){
-            this.octave++
-            this.keyboardCreator()
+            if(this.octave<6){
+                this.octave++
+                this.keyboardCreator()
+            }
         },
         lessOctave(){
-            this.octave--
-            this.keyboardCreator()
+            if(this.octave>2){
+                this.octave--
+                this.keyboardCreator()
+            }
         },
         addLBar(){
             Vue.nextTick(() =>{
