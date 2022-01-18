@@ -228,7 +228,6 @@ let keyComponent = {
         state1: { default: false },
         state2: { default: false },
         state3: { default: false },
-        pot: {type: Boolean},
         
         prelistenKey: {type: Boolean, default: true},
         beatMuted: { type: Boolean, default: false },
@@ -242,7 +241,7 @@ let keyComponent = {
     
     watch: {
         'isPlaying': function() {
-            if(!this.layerMuted && !this.beatMuted && this.isPlaying == this.beatId) { 
+            if(!this.beatMuted && this.isPlaying == this.beatId) { 
                 this.playKey();
             } 
         }
@@ -311,17 +310,17 @@ let keyComponent = {
             switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1
-                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state1){
+                    if(!this.beatMuted && this.prelistenKey && this.state1){
                         this.$emit('playSound1Event',this.keyId)
                     } break;
                 case 2: 
                     this.state2 = !this.state2
-                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state2){
+                    if(!this.beatMuted && this.prelistenKey && this.state2){
                         this.$emit('playSound2Event',this.keyId)
                     } break; 
                 case 3: 
                     this.state3 = !this.state3
-                    if(!this.layerMuted && !this.beatMuted && this.prelistenKey && this.state3){
+                    if(!this.beatMuted && this.prelistenKey && this.state3){
                         this.$emit('playSound3Event',this.keyId)
                     } break;
             } 
@@ -365,7 +364,6 @@ let columnComponent = {
                 :keyId=tonesInScale-k\
                 :prelistenKey="prelistenBeat"\
                 :beatMuted="beatMuted"\
-                :layerMuted="layerMuted"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
@@ -383,10 +381,16 @@ let columnComponent = {
     },
 
     props : ['beatId','prelistenBeat','layerMuted','tonesInScale', "inst_selected", 'isPlaying','scale_keyboard','duration'],
-
+    
     data() {
         return {
             beatMuted: false,
+        }
+    },
+
+    watch: {
+        'layerMuted' : function(val) {
+            this.beatMuted = val;
         }
     },
 
@@ -464,15 +468,11 @@ let layerComponent = {
                     <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
                     <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
                 </div>\
-                <key-selector-component\
-                    @keySelectedEvent="printKey">\
-                </key-selector-component>\
-                <scale-selector-component\
-                    @scaleSelectedEvent="printScale">\
-                </scale-selector-component>\
+                <key-selector-component @keySelectedEvent="printKey"></key-selector-component>\
+                <scale-selector-component @scaleSelectedEvent="printScale"></scale-selector-component>\
                 <div id="octave-selector">\
                     <div class="octave-viewer">Octave: {{octave}} </div>\
-                    <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
+                    <button class="layer-btn" @click="moreOctave"> + </button>\
                     <button class="layer-btn" @click="lessOctave"> - </button>\
                 </div>\
                 <div class="layer-sound-controller">\
@@ -509,7 +509,7 @@ let layerComponent = {
     
     data() {
         return {
-            isPlaying: 0,
+            isPlaying: -1,
             my_clock: '',
             tonesInScale: 8,
             keyboard: '',
@@ -546,12 +546,8 @@ let layerComponent = {
     },
 
     methods: {
-        next() {
-            this.isPlaying = (this.isPlaying + 1) % (this.num_beats*this.n_bars);
-        },
-        stop() {
-            clearInterval(this.my_clock)
-        },
+        next() { this.isPlaying = (this.isPlaying + 1) % (this.num_beats*this.n_bars); },
+        stop() { clearInterval(this.my_clock) },
         play() {
             this.stop();
             this.my_clock = setInterval(this.next,this.my_beat_duration)
@@ -569,7 +565,7 @@ let layerComponent = {
         keyboardCreator(){
             this.keyboard = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
             this.keyboard = this.keyboard.map(ele => ele + this.octave)
-            while(this.key+this.octave!=this.keyboard[0]){
+            while(this.key + this.octave != this.keyboard[0]){
                 first_element = this.keyboard.shift()
                 first_element = first_element.slice(0, -1) + (this.octave+1)
                 this.keyboard = this.keyboard.concat(first_element)
@@ -616,8 +612,8 @@ let layerComponent = {
         },
         moreOctave(){
             if(this.octave<6){
-                this.octave++
-                this.keyboardCreator()
+                this.octave++;
+                this.keyboardCreator();
             }
         },
         lessOctave(){
@@ -654,6 +650,7 @@ let sequencerComponent = {
                 <button class="add btn" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
                 <button class="add btn" @click="if(n_bars>1){n_bars--}"> - </button>\
             </div>\
+            \
             <controller-component\
                 @newLayerEvent="addLayer"\
                 @bpmEvent="updateBPM"\
@@ -665,12 +662,8 @@ let sequencerComponent = {
             ></controller-component>\
             \
             <div v-if="unifiedControl" class="layer-controller unified">\
-                <key-selector-component\
-                    @keySelectedEvent="printKey">\
-                </key-selector-component>\
-                <scale-selector-component\
-                    @scaleSelectedEvent="printScale">\
-                </scale-selector-component>\
+                <key-selector-component @keySelectedEvent="printKey"></key-selector-component>\
+                <scale-selector-component @scaleSelectedEvent="printScale"></scale-selector-component>\
                 <div class="octave-sound-controller">\
                     <div id="octave-selector">\
                         <div class="octave-viewer">Octave: {{octave}} </div>\
@@ -711,7 +704,6 @@ let sequencerComponent = {
         'controller-component' : controllerComponent,
         'key-selector-component' : keySelectorComponent,
         'scale-selector-component' : scaleSelectorComponent,
-
     },
     
     data(){
@@ -815,15 +807,19 @@ let sequencerComponent = {
             }
         },
         moreOctave(){
-            this.octave++;
-            for(idx in this.layers) {
-                this.$refs.layers_refs[idx].moreOctave()
+            if(this.octave<6){
+                this.octave++;
+                for(idx in this.layers) {
+                    this.$refs.layers_refs[idx].moreOctave()
+                }
             }
         },
         lessOctave(){
-            this.octave--;
-            for(idx in this.layers) {
-                this.$refs.layers_refs[idx].lessOctave()
+            if(this.octave>2){
+                this.octave--;
+                for(idx in this.layers) {
+                    this.$refs.layers_refs[idx].lessOctave()
+                }
             }
         },
         changeDuration(inst_id,duration){
