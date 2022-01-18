@@ -6,10 +6,7 @@
     border: 2px solid rgb(199, 202, 0);
     border-radius: 5px;
     position: absolute;
-    
-    overflow: scroll;
-    /*
-    */
+
     /*color*/
     background-color: rgb(19, 109, 116);
 }
