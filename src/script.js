@@ -9,15 +9,33 @@ Vue.config.devtools = true
 let instSelComponent = {
 
     template:'\
-            <div class="inst_sel"\
-                @click="instSelection"\
-                :style="cssVars">\
-           </div>\
+            <div class="inst-container">\
+                <div class="inst_sel"\
+                    @click="instSelection"\
+                    @mouseover="menu=true"\
+                    @mouseleave="menu=false"\
+                    :style="cssVars">\
+                </div>\
+                <div class="inst-menu"\
+                    @mouseover="menu=true"\
+                    @mouseleave="menu=false"\
+                    v-show="menu">\
+                        <label>Volume:<label>\
+                        <input type="range" min="-40" max="3" v-model="volume"></input>\
+                        <div v-if="id!=3">\
+                        <label>Duration:<label>\
+                        <input type="range" min="0" max="5" v-model="duration"></input>\
+                        </div>\
+                </div>\
+            </div>\
     ',
 
     props:{
         id: { type: Number, },
-        selected_inst:{ type: Number, }
+        selected_inst:{ type: Number, },
+        menu:{default: false},
+        volume:{default: 0},
+        duration:{default: 1}
     },
 
     methods: {
@@ -41,7 +59,22 @@ let instSelComponent = {
                 '--inst_sel_border': '2px'
             }
         }
-    }
+    },
+    watch: {
+        'volume': function() {
+            if(this.id==1) { 
+                synth1.volume.value = this.volume;
+            } 
+            if(this.id==2) { 
+                synth2.volume.value = this.volume;
+            }
+            if(this.id==3) { 
+                for(i=0;i<8;i++){
+                drum[i].volume.value = this.volume;
+                }
+            }
+        }
+    },
 }
 
 let controllerComponent = {
