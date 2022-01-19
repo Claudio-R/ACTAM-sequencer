@@ -2,6 +2,7 @@
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
  * 4. provare a gestire key e scale con v-model -- UPDATE CREATA VARIABILE
+ * 3. sistemare pulsanti ed essere sicuri che lo stato venga preservato quando cambio il controller
 */
 
 Vue.config.devtools = true
@@ -166,16 +167,18 @@ let scaleSelectorComponent = {
         'menu-element-component' : menuElementcomponent,
     },
 
+    props: ['selectedScale'],
+
     data() {
         return {
-            selectedScale: 'Major',
+            //selectedScale: 'Major',
             scales: ['Major','Minor','Melodic Minor','Harmonic Minor','Diminished','Augmented','Hexatonic'],
         }
     },
 
     methods: {
         selectScale(scale) {
-            this.selectedScale = scale;
+            //this.selectedScale = scale;
             this.$emit('scaleSelectedEvent', scale)
         }
     }
@@ -184,7 +187,7 @@ let scaleSelectorComponent = {
 let keySelectorComponent = {
 
     template: '\
-        <div id="key-selector" class="selector">Selected key: {{ selectedKey }}\
+        <div id="key-selector" class="selector">Selected key: {{ tonalKey }}\
             <menu-element-component v-for="note in keys"\
                 class="menu-element"\
                 :element="note"\
@@ -197,16 +200,18 @@ let keySelectorComponent = {
         'menu-element-component' : menuElementcomponent,
     },
 
+    props: ['tonalKey'],
+
     data() {
         return {
-            selectedKey: 'C',
+            //selectedKey: 'C',
             keys: ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'],
         }
     },
 
     methods: {
         selectKey(note) {
-            this.selectedKey = note;
+            //this.selectedKey = note;
             this.$emit('keySelectedEvent', note)
         }
     }
@@ -353,6 +358,7 @@ let keyComponent = {
 }
 
 let columnComponent = {
+    //; $emit(\'countMuteEvent\', beatMuted)
     template: '\
         <div>\
             <key-component v-for="k in tonesInScale"\
@@ -432,6 +438,7 @@ let columnComponent = {
 }
 
 let layerComponent = {
+    //@countMuteEvent="countMute"\
     template:'\
         <div class="layer">\
             <div class="layer-labels">\
@@ -468,8 +475,12 @@ let layerComponent = {
                     <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
                     <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
                 </div>\
-                <key-selector-component @keySelectedEvent="printKey"></key-selector-component>\
-                <scale-selector-component @scaleSelectedEvent="printScale"></scale-selector-component>\
+                <key-selector-component @keySelectedEvent="printKey"\
+                    :tonalKey="tonalKey"\
+                ></key-selector-component>\
+                <scale-selector-component @scaleSelectedEvent="printScale"\
+                    :selectedScale="selectedScale"\
+                ></scale-selector-component>\
                 <div id="octave-selector">\
                     <div class="octave-viewer">Octave: {{octave}} </div>\
                     <button class="layer-btn" @click="moreOctave"> + </button>\
@@ -500,9 +511,6 @@ let layerComponent = {
         layerMuted: {default:false},
         unifiedControl: { default: true } ,
         duration: Array,
-        
-        key: { default: 'C' },
-        scale: { default:'Major' },
         scale_keyboard : { default: ["C4","D4","E4","F4","G4","A4","B4","C5"] },
         drum_keyboard : { default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"] },
     },
@@ -514,6 +522,10 @@ let layerComponent = {
             tonesInScale: 8,
             keyboard: '',
             octave: 4,
+
+            tonalKey: 'C',
+            selectedScale: 'Major',
+            //counterMute: 0,
         }
     },
 
@@ -553,24 +565,24 @@ let layerComponent = {
             this.my_clock = setInterval(this.next,this.my_beat_duration)
         },
         printScale(num_scale){
+            this.selectedScale = num_scale;
             console.log("Selected scale " + num_scale);
-            this.scale = num_scale;
             this.keyboardCreator()
         },
         printKey(num_key){
+            this.tonalKey = num_key;
             console.log("Selected key " + num_key)
-            this.key = num_key;
             this.keyboardCreator()
         },
         keyboardCreator(){
             this.keyboard = ["C","Db","D","Eb","E","F","Gb","G","Ab","A","Bb","B"]
             this.keyboard = this.keyboard.map(ele => ele + this.octave)
-            while(this.key + this.octave != this.keyboard[0]){
+            while(this.tonalKey + this.octave != this.keyboard[0]){
                 first_element = this.keyboard.shift()
                 first_element = first_element.slice(0, -1) + (this.octave+1)
                 this.keyboard = this.keyboard.concat(first_element)
             }
-            switch(this.scale){
+            switch(this.selectedScale){
                 case 'Major': this.scale_keyboard = this.keyboard.filter((value, index) => {
                     return 2741 & (1 << index);
                 });/*101010110101 and reversed = 2741*/
@@ -635,7 +647,14 @@ let layerComponent = {
         clearLayer(){
             for(var idx=0; idx<this.$refs.beats_refs.length; idx++) { 
                 this.$refs.beats_refs[idx].clearAllKeys() }
-        }
+        },
+        /*
+        countMute(bool) {
+            if(bool){ this.counterMute++; }
+            else { this.counterMute--; }
+            if(this.counterMute == this.num_beats) { this.layerMuted = true; }
+            else if(this.counterMute == 0) { this.layerMuted = false; }
+        }*/
     },
 };
 
@@ -662,8 +681,12 @@ let sequencerComponent = {
             ></controller-component>\
             \
             <div v-if="unifiedControl" class="layer-controller unified">\
-                <key-selector-component @keySelectedEvent="printKey"></key-selector-component>\
-                <scale-selector-component @scaleSelectedEvent="printScale"></scale-selector-component>\
+                <key-selector-component @keySelectedEvent="printKey"\
+                    :tonalKey="allLayersKey"\
+                ></key-selector-component>\
+                <scale-selector-component @scaleSelectedEvent="printScale"\
+                    :selectedScale="allLayersScale"\
+                ></scale-selector-component>\
                 <div class="octave-sound-controller">\
                     <div id="octave-selector">\
                         <div class="octave-viewer">Octave: {{octave}} </div>\
@@ -710,6 +733,8 @@ let sequencerComponent = {
         return {
             systemPlaying: false,
             unifiedControl: true,
+            allLayersKey: 'C',
+            allLayersScale: 'Major',
             octave: 4,
             prelistenSystem: true,
             sequencerMuted: false,
@@ -797,11 +822,13 @@ let sequencerComponent = {
             }
         },
         printKey(num_key){
+            this.allLayersKey = num_key;
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].printKey(num_key);
             }
         },
         printScale(num_scale){
+            this.allLayersScale = num_scale;
             for(idx in this.layers) {
                 this.$refs.layers_refs[idx].printScale(num_scale);
             }
