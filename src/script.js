@@ -21,10 +21,10 @@ let instSelComponent = {
                     @mouseleave="menu=false"\
                     v-show="menu">\
                         <label>Volume:<label>\
-                        <input type="range" min="-40" max="3" v-model="volume"></input>\
+                        <input type="range" min="-40" max="3" class="slider" v-model="volume"></input>\
                         <div v-if="id!=3">\
                         <label>Duration:<label>\
-                        <input type="range" min="0" max="4" v-model="duration"></input>\
+                        <input type="range" min="0" max="4" class="slider" v-model="duration"></input>\
                         </div>\
                 </div>\
             </div>\
@@ -47,8 +47,8 @@ let instSelComponent = {
 
     computed: {
         cssVars() {
-            activeCSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)']
-            passiveCSScolors = ['rgb(120, 0, 0)','rgb(0, 0, 120)','rgb(0, 120, 0)']
+            var activeCSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)']
+            var passiveCSScolors = ['rgb(120, 0, 0)','rgb(0, 0, 120)','rgb(0, 120, 0)']
             if(this.id==this.selected_inst){
             return{
                 '--inst_sel_color': activeCSScolors[this.id-1],
@@ -83,13 +83,14 @@ let instSelComponent = {
 let controllerComponent = {
     template:'\
        <div class="controller">\
-            <input type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-            <input type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-            <button @click="$emit(\'playAllEvent\')">Play</button>\
-            <button @click="$emit(\'stopAllEvent\')">Stop</button>\
-            <button @click="$emit(\'unifiedControllerEvent\')">Unify controller</button>\
-            <div id="instrumentContainer">\
-            <label>Instrument:</label>\
+            <div class="btn-1" @click="$emit(\'playAllEvent\')">▶</div>\
+            <div class="btn-1 st" @click="$emit(\'stopAllEvent\')">■</div>\
+            <input class="text-input border" type="number" v-model="newInput" placeholder="Add a layer" @keyup.enter="addLayer">\
+            <input class="text-input border" type="number" v-model="bpm_value" placeholder="Select bpm" @keyup.enter="updateBPM">\
+            <button class="unif"  @click="$emit(\'unifiedControllerEvent\')">Unify controller</button>\
+            <fieldset>\
+                <legend>instrument</legend>\
+            </fieldset>\
             <inst-component v-for="k in num_inst"\
                 :id="k"\
                 :selected_inst=selected_inst\
@@ -250,7 +251,7 @@ let keyComponent = {
 
     computed: {
        cssVars() {
-           CSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)'] /* Modifica qui i colori degli strumenti*/
+           var CSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)'] /* Modifica qui i colori degli strumenti*/
            if(this.state1 && this.state2 &&this.state3){
                return {
                    '--inst_color': CSScolors[3-this.very_last_color-this.last_color],
@@ -371,9 +372,9 @@ let columnComponent = {
                 @playSound3Event="playInst3"\
             ></key-component>\
             <div id="beat-controller">\
-                <button class="beat-btn monitor-btn" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }">P</button>\
-                <button class="beat-btn mute-btn" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted">M</button>\
-                <button class="beat-btn clear-btn" @click="clearAllKeys">C</button>\
+                <button class="beat pplay" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"></button>\
+                <button class="beat mute" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted"></button>\
+                <button class="beat clear" @click="clearAllKeys"></button>\
             </div>\
         </div>\
     ',
@@ -437,7 +438,7 @@ let layerComponent = {
                 <div v-else>\
                     <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
                 </div>\
-                <button v-if="unifiedControl" class="remove-btn-unified" @click="$emit(\'remove\')">Remove layer</button>\
+                <button id="remove-btn" class="btr" @click="$emit(\'remove\')">Remove layer</button>\
             </div>\
             \
             <div v-for="j in n_bars">\
@@ -460,9 +461,8 @@ let layerComponent = {
             \
             <div v-if="!unifiedControl" class="layer-controller">\
                 <div id="buttons">\
-                    <button id="remove-btn" @click="$emit(\'remove\')">Remove layer</button>\
-                    <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
-                    <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
+                    <button id="addKey-btn" class= "spin circle" @click="$emit(\'addKeyEvent\')"> + </button>\
+                    <button id="removeKey-btn" class= "spin circle" @click="$emit(\'removeKeyEvent\')"> - </button>\
                 </div>\
                 <key-selector-component\
                     @keySelectedEvent="printKey">\
@@ -471,14 +471,20 @@ let layerComponent = {
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
                 <div id="octave-selector">\
-                    <div class="octave-viewer">Octave: {{octave}} </div>\
-                    <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
-                    <button class="layer-btn" @click="lessOctave"> - </button>\
+                    <div class="d little">\
+                        <div class="v l">\
+                            <span class="oct">octave:{{octave}}</span>\
+                        </div>\
+                    </div>\
+                    <div class="dpad">\
+                        <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
+                        <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
+                    </div>\
                 </div>\
                 <div class="layer-sound-controller">\
-                    <button class="layer-btn prelisten-btn" :class="{ prelistenActive : prelistenLayer }" @click="prelistenLayer=!prelistenLayer">L</button>\
-                    <button class="layer-btn mute-btn" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted">M</button>\
-                    <button class="layer-btn clear-btn" @click="clearLayer">C</button>\
+                    <button class=" beat pplay" :class="{ prelistenActive : prelistenLayer }" @click="prelistenLayer=!prelistenLayer"></button>\
+                    <button class="beat mute" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted"></button>\
+                    <button class="beat clear" @click="clearLayer"></button>\
                 </div>\
             </div>\
         </div>\
@@ -644,15 +650,24 @@ let layerComponent = {
 };
 
 let sequencerComponent = {
-    
+
     template: '\
         <div>\
-            <div class="view-box">\
-                <div class="viewer">BPM: {{bpm}}</div>\
-                <div class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</div>\
-                <div class="viewer">Bars: {{n_bars}}</div>\
-                <button class="add btn" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
-                <button class="add btn" @click="if(n_bars>1){n_bars--}"> - </button>\
+            <div class="d">\
+                <div class="v left">\
+                    <span class="bpm">BPM: {{bpm}}</span>\
+                </div>\
+                <div class="v right">\
+                    <span class="inst">Selected instrument: {{inst_name[inst_id-1]}}</span>\
+                </div>\
+            </div>\
+            <div class="barcont">\
+                <div class="bars view">Bars: {{n_bars}}</div>\
+                <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
+                <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
+            </div>\
+            <div class="imagecontainer">\
+                <div class="logo"></div>\
             </div>\
             <controller-component\
                 @newLayerEvent="addLayer"\
@@ -672,15 +687,21 @@ let sequencerComponent = {
                     @scaleSelectedEvent="printScale">\
                 </scale-selector-component>\
                 <div class="octave-sound-controller">\
-                    <div id="octave-selector">\
-                        <div class="octave-viewer">Octave: {{octave}} </div>\
-                        <button class="layer-btn" @click="moreOctave"> + </button>\
-                        <button class="layer-btn" @click="lessOctave"> - </button>\
+                <div id="octave-selector" class="repos">\
+                    <div class="d little">\
+                        <div class="v l">\
+                            <span class="oct">octave:{{octave}}</span>\
+                        </div>\
                     </div>\
-                    <div class="layer-sound-controller">\
-                        <button class="layer-btn prelisten-btn" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem">L</button>\
-                        <button class="layer-btn mute-btn" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted">M</button>\
-                        <button class="layer-btn clear-btn" @click="clearSystem">C</button>\
+                    <div class="dpad">\
+                        <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
+                        <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
+                    </div>\
+                </div>\
+                    <div class="layer-sound-controller uni">\
+                        <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem"></button>\
+                        <button class="mute un" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted"></button>\
+                        <button class="clear un" @click="clearSystem"></button>\
                     </div>\
                 </div>\
             </div>\

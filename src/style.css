@@ -1,42 +1,263 @@
 #app {
+
+    /*location*/
+    position: relative;
+
     /*size*/
     width: min-content;
+    height: 50%;
     
     /*aspect*/
-    border: 2px solid rgb(199, 202, 0);
+    border: 2px solid rgb(39, 35, 29);
     border-radius: 5px;
-    position: absolute;
-
+    
     /*color*/
-    background-color: rgb(19, 109, 116);
+    background-color: rgba(196, 194, 201, 0.76);
+
+    /*font*/
+    font-family:'Early Gameboy';
+    font-size: 0.52em;
+
+    /*layering position*/
+    z-index: 2;
 }
 
+@font-face{
+    font-family:'Early Gameboy';
+    src: url(/Early_GameBoy.ttf);
+}
+
+.imagecontainer{
+    width: 170px;
+    height: 100px;
+    margin-top:-9%;
+    margin-left: 40%;
+    position: sticky;
+}
+
+.logo{
+    background-image: url(/LOGO.png);
+    background-repeat: no-repeat;
+    background-size: 180px;
+    height:100%;
+    width: 100%;
+}
 /******************************************* TOP BOX *******************************************/
-.view-box {
-    display: inline-flex;
-    border-radius: 10px;
-    margin-top: 10px;
-    margin-left: 10px;
-    padding: 10px;
-    background-color: beige;
+
+.bars{
+    position: relative;
+    margin: 5px;
+    height: 20px;
+    width: 60px;
+    top: 10px;
+    text-shadow: 0px 1px 0px rgba(247, 247, 247, 0.795), 0px -1px 0 rgba(0, 0, 0, 0.7);
+    color:rgb(143, 30, 236);
 }
 
-.viewer{
-    width: auto;
-    height: 80%;
-    margin-right: 10px;
-    border: 2px solid rgb(216, 216, 178);
-    background-color: bisque;
+
+.barcont{
+    width: 150px;
+    height: 90px;
+    position: relative;
+    display: inline-block;
+    left: 84%;
+    top: -70px;
+}
+.barplus, .barminus{
+    position: relative;
+    height: 30px;
+    background: rgba(32, 9, 240, 0.589);
+    border-radius: 25px;
+    border: 2px dotted rgb(235, 134, 134);
+    color: rgba(247, 247, 247, 0.795);
+    box-shadow: 2px -1px 3px rgba(0,0,0,0.32);
+    top: 40%;
+    margin-top: -10px;
+}
+.barplus:active, .barminus:active{
+    background: rgb(25, 0, 255);
+    transition: border 0.2s;
+    border: 2px solid rgba(235, 134, 134, 0.356);
+    box-shadow: rgb(0,0,0);
 }
 
+.barminus{
+    margin: 5px;
+}
+
+.v{
+    position: absolute;
+    border: 2px solid transparent;
+    text-align: left;
+    opacity: 0.8;
+    font-size: 1.2em;
+    text-shadow: 1px -1px 2px rgba(150, 73, 73, 0.767);
+    z-index: 1;
+}
+.left{
+    border: 2px solid transparent;
+    height: 45%;
+    width: 30%;
+    bottom: 0%;
+    top: 25%;
+    left: 5%;
+}
+.right{
+    border: 2px solid transparent;
+    height: 43%;
+    width: 120%;
+    left: 15%;
+    top: 30%;
+    position: relative;
+}
+.v::before{
+    content:'';
+    background-color:#929d97;
+    border: 3px solid transparent;
+    border-top-color: grey;
+    border-left-color: grey;
+    border-radius:3px;
+    position: absolute;
+    bottom: 1%;
+    left:-6%;
+    padding: 3% 30%;
+    height: inherit;
+    width: inherit;
+    z-index: -2;
+}
+.d{
+    position: relative;
+    padding: 2px 280px;
+    height: 50px;
+    width: 200px;
+    background-color: #23252d;
+    border: 2px solid black;
+    border-radius: 15px;
+    margin: 10px;
+    box-shadow: 4px 5px 6px rgba(0,0,0,0.32);
+    z-index: -1;
+} 
+.inst{
+    position: relative;
+    display: block;
+    top: 4px;
+    width: 400px;
+}
+
+.bpm{
+    position: relative;
+    display: block;
+    top: 6px;
+    width: 100px;
+}
+
+.view{
+    display: inline-block;
+}
 /******************************************* CONTROL BAR *******************************************/
 .controller {
     width: auto;
-    background-color: beige;
+    background: #66ececc7;
     border-radius: 10px;
+    box-shadow: 4px 5px 6px rgba(0,0,0,0.45);
     margin: 10px;
     height: auto;
-    padding: 10px;
+}
+
+input{
+    display: inline-block;
+    position: relative;
+    height: 20px;
+    width: 150px;
+    color: black;
+    cursor: pointer;
+    font-family: 'Early GameBoy';
+    font-size: 0.66em;
+    margin: 5px 3px;
+    background:rgba(55,72,64,0.09);
+    left: 25px;
+}
+.text-input{
+    border: 2px solid transparent;
+    margin: 7px 7px;
+    border-radius: 8px;
+    transition: 0.5s linear;
+    box-shadow: 2px 3px 4px rgba(0,0,0,0.4);
+}
+
+.text-input::placeholder{
+    color: black;
+    position: relative;
+    font-family:'Early GameBoy';
+    font-size: 0.66em;
+    transition: 1s ease-out;
+}
+.text-input:focus{
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: rgba(167, 165, 172, 0.26);
+    border-bottom-width: medium;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-bottom-color:  rgba(98, 221, 60, 0.74);
+    outline: none;
+}
+.text-input:focus::placeholder{
+    color: rgb(88, 73, 3);
+    outline-style: none;
+    border-color: white;
+}
+
+input::-webkit-inner-spin-button, 
+input::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+
+.btn-1{
+    position:relative;
+    display:inline-block;
+    font-size:20px;
+    width:30px;
+    height:28px;
+    line-height: 31px;
+    letter-spacing: -5px;
+    border-radius:50%;
+    background-color:#2c313e;
+    border-bottom:2px solid rgb(114, 109, 109);
+    box-shadow:-1px 1px 3px rgba(0, 0, 0, 0.541), 0px 0px 3px rgba(0, 0, 0, 0.568) inset;
+    text-shadow: 0px -1px 1px rgba(136, 136, 136, 0.651);
+    color:rgba(252, 244, 244, 0.432);
+    text-align:center;
+    cursor:pointer;
+    left: 10px;
+    top: 5px;
+    transition:box-shadow 0.1s ease-out, border 0.1s ease-out, line-height 0.2s ease-out;
+}        
+.btn-1:active {
+    box-shadow:-1px 1px 1px black, 0px 0px 5px black inset;
+    border-width:0px;
+}
+.st{
+    position: relative;
+    display: inline-block;
+    font-size: 5em;
+    line-height: 25px;
+    letter-spacing: 0px;
+    top: 10px;
+    left: 15px;
+}
+
+.unif{
+    background: rgba(255, 0, 34, 0.568);
+    border-radius: 15px;
+    font-family: 'Early_GameBoy';
+    font-size: 0.65em;
+    width: 60px;
+    height: 30px;
+    margin-left: 40px;
+    margin-right: -40px;
 }
 
 .inst-container{
@@ -60,12 +281,55 @@
 }
 
 .inst-menu {
-    margin-top:0px;
-    width: 200px;
+    margin-top:5px;
+    width: 300px;
+    height: 100px;
     position:absolute;
+    border-radius: 10px;
     z-index: 9;
-    background-color: rgb(107, 216, 183);
-    left: -86px;
+    background-color: rgb(245, 245, 245);
+    border: 2px solid black;
+}
+
+
+.inst-menu label{
+    position: relative;
+    font-size: 0.89em;
+    margin: 15px;
+}
+
+.slider {
+    margin: 10px;
+    -webkit-appearance: none;
+    width: 50%;
+    height: 5px;
+    background: #000;
+    outline: none;
+    border: 2px solid #66ECEC;
+    border-radius: 8px;
+}
+  
+  
+  /* for chrome/safari */
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 25px;
+    background: #000;
+    cursor: pointer;
+    border: 1px solid #66ECEC;
+    border-radius: 4px;
+}
+  
+  /* for firefox */
+.slider::-moz-range-thumb {
+    width: 15px;
+    height: 25px;
+    background: #000;
+    cursor: pointer;
+    border: 1px solid #66ECEC;
+    border-radius: 4px;
 }
 
 .checkbox {
@@ -77,7 +341,71 @@
 /******************************************* LAYER *******************************************/
 #layers-container {
     margin: 10px;
-    background-color: rgb(28, 140, 148);
+    border-radius: 8px;
+    border: 4px solid rgba(0, 0, 0, 0.596);
+    background: radial-gradient(circle at center, rgb(199, 195, 195) 80%, rgba(102, 100, 100, 0.199) 100%);
+    box-shadow: 3px 4px 7px rgba(0,0,0,0.25);
+}
+
+.container{
+    height: 20px;
+    width: 80px;
+    border: 2px solid transparent;
+    position: relative;
+    display: inline-block;
+    top: 11px;
+    left: -100px;
+    /*opacity: 0;
+    transition: opacity 5s, transform 1s;*/
+}
+.container::before,
+.container::after {
+    box-sizing: inherit;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.okay{
+    transition: 2s ease-out;
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    font-family:'Early GameBoy';
+    color: black;
+    left: 40px;
+}
+
+fieldset{
+    position: relative;
+    display: inline-block;
+    font-family:'Early GameBoy';
+    border: 2px solid transparent;
+    left: 28px;
+    padding: 10px 30px;
+    top: 20px;
+}
+
+.hov{
+    position: absolute;
+    display: inline-block;
+    background-color: grey;
+    border: 1px solid transparent;
+    border-top-color: rgb(21, 23, 24);
+    border-right-color: rgb(94, 101, 102);
+    border-left-color: rgb(117, 117, 117);
+    top: 85px;
+    padding: 8px 11px;
+    border-radius: 100%;
+    right: 180px;
+}
+.hov::before{
+    content: '';
+    padding: 3px;
+    border-radius: 15px;
+    position: relative;
+    border: 2px solid black;
 }
 
 .layer{
@@ -88,16 +416,19 @@
 
 .keyboard {
     display: inline-flex;
+    position: relative;
+    width: 800px;
+    height: auto;
+
     border-radius: 10px;
-    background-color: rgb(199, 202, 0);
-    border:3px solid rgb(19, 109, 116);
+    background-color: #6BD6CD;
 }
 
 .column {
     display: inline-block;
     width: calc(var(--columnWidth) - 6px);
     height: auto;
-    background-color: #c0a630;
+    background-color: #EF9C8A;
     border: 3px solid #0000004d;
     border-radius: 8px;
     margin: 5px;
@@ -114,11 +445,48 @@
     justify-content: space-between;
 }
 
-.beat-btn {
+.beat {
     width: 30%;
-    height: auto;
+    height: 20px;
+    border: 1px solid #bbb8b8;
+    background-color: #7a5043a9;
+    cursor: pointer;
+    border-radius: 50px;
     margin: 2px auto 2px;
-    text-align: center;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.842);
+
+}
+.beat:active{
+    transform: translate(2px);
+    transition: linear 0.1s;
+    box-shadow:-1px 1px 1px black, 0px 0px 5px black inset;
+    border-width:0px;
+}
+
+.mute{
+    background-image: url(/mute.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: calc(0.75em + 0.375rem) calc(0.55em + 0.375rem);
+}
+
+.pplay{
+    background-image: url(/play.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: calc(0.75em + 0.375rem) calc(0.55em + 0.375rem);
+}
+
+.clear{
+    background-image: url(/clear.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: calc(0.75em + 0.375rem) calc(0.55em + 0.375rem);
+}
+
+.muteActive {
+    background-color: red;
+    /*border: 1px solid rgb(163, 24, 24);*/
 }
 
 .playing {
@@ -129,9 +497,11 @@
 .keyback {
     width: auto;
     height: 18px;
-    background-color: rgb(107, 216, 183);
-    border: 3px solid #0000004d;
+    background-color: #d2d5d8;
+    border: 1px solid transparent;
+    margin: 4px;
     border-radius: 8px;
+    box-shadow: 4px 5px 6px rgba(0,0,0,0.35);
 }
 
 /* bottone */
@@ -154,7 +524,7 @@
 
 .active {
     position: relative;
-    left: calc(var(--columnWidth)/2 - 6px + var(--inst_shift));
+    /*left: calc(var(--columnWidth)/2 - 6px + var(--inst_shift));*/
     width: 14px;
     height: 14px;
     border-radius: 100%;
@@ -163,38 +533,196 @@
     box-shadow: var(--shadow);
 }
 
+
+.un{
+    height: 20px;
+    width: 30px;
+    border-radius: 15px;
+    background-color: #b95f43a9;
+    cursor: pointer;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.842);
+}
+
 /******************************************* LAYER CONTROLLER *******************************************/
 .layer-controller{
-    margin-left: 10px;
-    background-color: beige;
+    margin-left: 4px;
+    width: 150px;
+    background: radial-gradient(ellipse, rgba(158, 156, 156, 0.603) 93%, rgb(199, 82, 61) 100%);
+    box-shadow:2px 2px 2px rgba(0, 0, 0, 0.459);
+    border-radius: 4px;
+    border: 2px solid rgb(199, 82, 61);
 }
 
 .unified {
     margin: 10px;
-    padding: 5px;
-    background-color: #e2c957;
-    border: rgb(177, 161, 15) solid 3px;
+    padding: 5px 30px;
+    height: 150px;
+    width:inherit;
+    background: rgb(188, 180, 255);
+    border: rgb(0, 0, 0) solid 3px;
     border-radius: 10px;
 }
 
-#buttons{
-    display: inline-flex;
-    margin-top: 10px;
-    margin-left: 10px;
-    margin-right: 10px;
-    padding: 0;
+#addKey-btn,#removeKey-btn{
+    border: 0;
+    position: relative;
+    background: #2c313e;
+    color: rgba(252, 244, 244, 0.432);
+    font-family: 'Early Gameboy';
+    box-shadow: 3px 0px 2px rgba(0,0,0,0.842);
+    text-shadow: 0px -1px 1px rgba(136, 136, 136, 0.651);
+    left: 20%;
+    margin: 12px 5px;
+    font-size: 40%;
+    text-align: center;
 }
 
-#addKey-btn{
-    width: auto;
-    margin-left: 7px;
+#addKey-btn .repos ,#removeKey-btn .repos{
+    top: 20px;
+    left: 50px;
+}
+
+#addKey-btn::before,
+#addKey-btn::after, #removeKey-btn::before, #removeKey-btn::after {
+    box-sizing: inherit;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.spin {
+    height: 30px;
+    width: 30px;
+}
+
+.spin::before,
+.spin::after {
+    top: 0;
+    left: 0;
+}
+
+.spin::before {
+    border: 3px solid transparent;  
+}
+
+.spin:hover::before {
+    border-top-color: #98218f;
+    border-right-color: #98218f;
+    border-bottom-color: #98218f;
+    transition: border-top-color 0.05s linear, border-right-color 0.05s linear 0.01s, border-bottom-color 0.05s linear 0.02s;
+}
+
+.spin::after {
+    border: 0px solid transparent;
+}
+
+.spin:hover::after {
+    border-top: 3px solid #98218f;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    transform: rotate(270deg);
+    transition: transform 0.02s linear 0s, border-left-width 0.02s linear 0.05s, -webkit-transform 0.2s linear 0s;
+}
+
+.circle {
+    border-radius: 100%;
+    box-shadow: none;
+}
+
+.circle::before,
+.circle::after {
+    border-radius: 100%;
+}
+
+#remove-btn{
+    display: inline-block;
+    position: relative;
+    background: none;
+    border: none;
+    border-radius: 5px;
+    color: rgb(199, 82, 61);
+    font-family:'Early GameBoy';
+    font-size:0.46em;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.345);
+    cursor: pointer;
+    margin: 20px 15px;
+    top: -215px;
+    left: -22px;
+    width: 80px;
+    height: 25px;
+    background:rgba(76, 214, 41, 0.548);
+}
+#remove-btn::before, #remove-btn::after{
+    content:"";
+    width: 0;
+    height: 2px;
+    position: absolute;
+    transition: all 0.2s linear;
+    background: rgb(199, 77, 61);
+}
+#remove-btn:hover::before, #remove-btn:hover::after{
+    width: 100%;
+}
+#remove-btn:hover span::before, #remove-btn:hover span::after{
+    height: 100%;
+}
+.btr::before, .btr::after{
+    transition-delay: 0.2s;
+}
+.btr::before{
+    right: 0;
+    top: 0;
+}
+.btr::after{
+    left: 0;
+    bottom: 0;
+}
+.btr:hover::before, .btr:hover::after{
+    transition-delay: 0s;
 }
 
 #octave-selector{
     display: inline-flex;
     padding: 0;
     margin-left: 10px;
+    margin-top: 0px;
 }
+
+.little{
+    padding: 15px 25px;
+    border-color:rgb(137, 238, 78);
+    width: 50px;
+    height: 10px;
+    margin: 0px;
+    bottom: 2px;
+    z-index: 0;
+}
+
+.l{
+    margin: 5px 0px;
+    height: 65%;
+    width: 60%;
+    bottom: 0%;
+    top: -1%;
+    left: 11%;
+    vertical-align: text-bottom;
+    font-size: 0.56em;
+}
+
+.oct{
+    position: relative;
+    width: 40%;
+    top: 10px;
+}
+
+.octave-viewer{
+    padding: 2px;
+    border: 2px solid rgb(216, 216, 178);
+    background-color: bisque;
+}
+
+
 
 .octave-sound-controller{
     display: inline-flex;
@@ -206,62 +734,150 @@
     margin-left: 0px;
 }
 
-.octave-viewer{
-    padding: 2px;
-    border: 2px solid rgb(216, 216, 178);
-    background-color: bisque;
-}
-
 .layer-sound-controller{
     margin: 10px;
+    display: flex;
+}
+.uni{
+    position:relative;
+    left: 245%;
 }
 
 .octave-sound-controller .layer-sound-controller{
     margin: 10px 10px 0px 0px;
 }
 
-.monitor-btn {
-    background-color: rgba(147, 238, 110, 0.849);
-}
 
-.prelisten-btn {
-    background-color: rgb(0, 161, 86);
-}
 
-.prelistenActive {
-    background-color: rgb(0, 255, 21);
-}
-.mute-btn {
-    background-color: rgb(255, 166, 0);
-}
-.muteActive {
-    background-color: red;
-}
-.clear-btn {
-    background-color: rgb(42, 206, 206);
-}
+
+.dpad {
+    position:relative;
+    display:inline-block;
+    width: 30px;
+    height:30px;
+    left: 5px;
+    cursor: pointer;
+  }           
+  .up {
+    top:calc(0% + 2px);
+    left:33%;
+    box-shadow:0px -2px 0px rgb(34, 33, 33) inset;
+    z-index: 0;
+  }        
+  .up:active{
+    background:linear-gradient(to top, #565e6a 0%, #333 100%);
+  }
+  .down {
+    top:calc(66% - 4px);
+    left:33%;
+    margin-top: 1px;
+    box-shadow:0px -2px 0px #888 inset;
+    z-index: 0;
+  }       
+  .down:active {
+    background:linear-gradient(to bottom, #565e6a 0%, #333 100%);
+  }
+  .up,.down{
+    background-color:transparent;
+    border:2px solid #23252d;
+    border-radius:5px;
+    background-color: #474448;
+    
+    width:15px;
+    height:15px;
+  }
+  .figureblock{
+    padding: 0.2px 8px;
+    background-color: transparent;
+    border: 2px solid transparent;
+    position: relative;
+  }
+  .dd{
+    position: absolute;
+    top: 75%;
+    left: 17%;
+    padding:1.8px 2.5px;
+    background-color: #23252d;
+  }
+  .dd::after{
+    content:'';
+    position: absolute;
+    background-color: transparent;
+    border: 2px solid transparent;
+    width: 0;
+    height: 0;
+    top: 145%;
+    left: -50%;
+    border-left: 5px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #23252d;
+  }
+  .u{
+    position: absolute;
+    top: 21%;
+    left: 15%;
+    padding:2px 3px;
+    background-color: #15161b8e;
+    border-bottom-color: linear-gradient(to top, rgba(49, 46, 46, 0.548) 0%, rgb(15, 15, 15) 100%);
+    border-left-color: linear-gradient(to left, rgba(49, 46, 46, 0.548) 0%, rgb(15, 15, 15) 100%);
+    border-right-color: linear-gradient(to right, rgba(49, 46, 46, 0.548) 0%, rgb(15, 15, 15) 100%);
+  }
+  
+  .u::after{
+    content:'';
+    position: absolute;
+    background-color: transparent;
+    border: 2px solid transparent;
+    width: 0;
+    height: 0;
+    bottom: 153%;
+    left: -48%;
+    border-left: 5.5px solid transparent;
+    border-right: 5.5px solid transparent;
+    border-bottom: 4.5px solid #15161b8e;
+  }
 
 /******************************************* LAYER LABELS *******************************************/
 
 .layer-labels{
-    margin-right: 10px;
+    margin-right: 15px;
     margin-top: 8px;
-    width: auto;
+    margin-left: 1px;
+    width: 70px;
+    height: 185px;
+    border: 2px solid #2d661c;
+    text-align: center;
+    text-shadow: 1px -1px 2px rgba(201, 95, 95, 0.671);
+    border-left-color: rgba(128, 128, 128, 0.096);
+    background: linear-gradient(45deg, #377a22 40%, #248324 80% ,#6ab32fd2 100%);
 }
 
 .key-label{
-    border: 2px solid rgb(216, 216, 178);
-    background-color: bisque;
-    width: 90px;
-    height: 20px;
-    margin: 0px;
+    border: 2px solid transparent;
+    background-color: transparent;
+    position: relative;
+    display: inline-block;
+    top: -206px;
+    width: 50px;
+    height: 16px;
+    margin: 2px;
+    margin-left: -3px;
     text-align: center;
+    z-index: 2;
 }
 
-.remove-btn-unified {
-    background-color: rgb(194, 194, 194);
-    margin-top: 2px;
-    text-align: center;
+.layer-labels::before{
+    content:'';
+    width: 60px;
+    height: 182px;
+    background: #57998b44;
+    border-radius: 15px;
+    border:12px solid #23252d;
+    position: relative;
+    display: inline-block;
+    top: -7px;
+    left: -6px;
+    z-index: 0;
 }
 
 /******************************************* SCALE and KEY SELECTOR *******************************************/
@@ -269,12 +885,17 @@
     margin: 10px;
     height: 20px;
     padding: 2px;
-    background-color: bisque;
-    border: 2px solid rgb(19, 109, 116);
+    border-radius: 25%;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.842);
+    background-color: rgba(180, 167, 167, 0.87);
+    border: 2px solid rgb(123, 226, 233);
+    text-align: center;
+    vertical-align: middle;
 }
 
 .selector:hover {
-    background-color: #ebcf55;
+    background-color: #55eb94;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.442);
 }
 
 .menu-element {
@@ -282,6 +903,7 @@
     margin: 0;
     padding: 2px;
     list-style-type: none;
+    box-shadow: 2px 2px 2px rgba(0,0,0,0.842);
 }
 
 .selector:hover .menu-element {
@@ -292,12 +914,13 @@
     height: auto;
     padding: 2px;
     margin-bottom: -2px;
-    border: 2px solid rgb(19, 109, 116);
+    border: 2px solid rgb(137, 238, 78);
+    border-radius: 25%;
     left: -4px;
-    background: white;
+    background: rgba(136, 214, 100, 0.878);
 }
 
 .selector:hover .menu-element:hover {
-    background-color: #c0a630;
+    background-color: #55eb94;
     color: #FFFFFF;
 }
