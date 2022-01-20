@@ -16,16 +16,18 @@ let instSelComponent = {
                     @mouseleave="menu=false"\
                     :style="cssVars">\
                 </div>\
-                <div class="inst-menu"\
+                <div class="inst-menu-container"\
                     @mouseover="menu=true"\
-                    @mouseleave="menu=false"\
-                    v-show="menu">\
-                        <label>Volume:<label>\
-                        <input type="range" min="-40" max="3" class="slider" v-model="volume"></input>\
-                        <div v-if="id!=3">\
-                        <label>Duration:<label>\
-                        <input type="range" min="0" max="4" class="slider" v-model="duration"></input>\
-                        </div>\
+                    @mouseleave="menu=false">\
+                    <div class="inst-menu"\
+                        v-show="menu">\
+                            <label>Volume:<label>\
+                            <input type="range" min="-40" max="3" class="slider" v-model="volume"></input>\
+                            <div v-if="id!=3">\
+                            <label>Duration:<label>\
+                            <input type="range" min="0" max="4" class="slider" v-model="duration"></input>\
+                            </div>\
+                    </div>\
                 </div>\
             </div>\
     ',

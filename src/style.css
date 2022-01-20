@@ -289,13 +289,18 @@ input::-webkit-outer-spin-button {
 
 }
 
+.inst-menu-container {
+    margin-top:0;
+    z-index: 10;
+    position:absolute;
+    left:-500%;
+}
+
 .inst-menu {
     margin-top:5px;
     width: 300px;
     height: 100px;
-    position:absolute;
     border-radius: 10px;
-    z-index: 9;
     background-color: rgb(245, 245, 245);
     border: 2px solid black;
 }
