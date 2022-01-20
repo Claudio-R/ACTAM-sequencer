@@ -256,11 +256,7 @@ let keyComponent = {
 
     computed: {
        cssVars() {
-<<<<<<< HEAD
            var CSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)'] /* Modifica qui i colori degli strumenti*/
-=======
-           CSScolors = ['rgb(255, 0, 0)','rgb(0, 0, 255)','rgb(0, 255, 0)']
->>>>>>> 0c2b919ad8af77ec23c6bd113f45ca806fe6aae7
            if(this.state1 && this.state2 &&this.state3){
                return {
                    '--inst_color': CSScolors[3-this.very_last_color-this.last_color],
@@ -381,15 +377,9 @@ let columnComponent = {
                 @playSound3Event="playInst3"\
             ></key-component>\
             <div id="beat-controller">\
-<<<<<<< HEAD
                 <button class="beat pplay" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"></button>\
-                <button class="beat mute" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted"></button>\
+                <button class="beat mute" :class="{ muteActive : muteBeat }" @click="muteBeat=!muteBeat"></button>\
                 <button class="beat clear" @click="clearAllKeys"></button>\
-=======
-                <button class="beat-btn monitor-btn" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }">P</button>\
-                <button class="beat-btn mute-btn" :class="{ muteActive : muteBeat }" @click="muteBeat=!muteBeat">M</button>\
-                <button class="beat-btn clear-btn" @click="clearAllKeys">C</button>\
->>>>>>> 0c2b919ad8af77ec23c6bd113f45ca806fe6aae7
             </div>\
         </div>\
     ',
@@ -459,11 +449,7 @@ let layerComponent = {
                 <div v-else>\
                     <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
                 </div>\
-<<<<<<< HEAD
-                <button id="remove-btn" class="btr" @click="$emit(\'remove\')">Remove layer</button>\
-=======
-                <button v-if="unifiedControl" class="remove-btn-unified" @click="$emit(\'removeLayerEvent\')">Remove layer</button>\
->>>>>>> 0c2b919ad8af77ec23c6bd113f45ca806fe6aae7
+                <button id="remove-btn" class="btr" @click="$emit(\'removeLayerEvent\')">Remove layer</button>\
             </div>\
             \
             <div v-for="j in n_bars">\
@@ -486,14 +472,8 @@ let layerComponent = {
             \
             <div v-if="!unifiedControl" class="layer-controller">\
                 <div id="buttons">\
-<<<<<<< HEAD
                     <button id="addKey-btn" class= "spin circle" @click="$emit(\'addKeyEvent\')"> + </button>\
                     <button id="removeKey-btn" class= "spin circle" @click="$emit(\'removeKeyEvent\')"> - </button>\
-=======
-                    <button id="remove-btn" @click="$emit(\'removeLayerEvent\')">Remove layer</button>\
-                    <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
-                    <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
->>>>>>> 0c2b919ad8af77ec23c6bd113f45ca806fe6aae7
                 </div>\
                 <key-selector-component :selectedKey="keyLayer"\
                     @keySelectedEvent="function(val){$emit(\'keySelectedEvent\',val)}"\
@@ -502,31 +482,20 @@ let layerComponent = {
                     @scaleSelectedEvent="function(val){$emit(\'scaleSelectedEvent\',val)}"\
                 ></scale-selector-component>\
                 <div id="octave-selector">\
-<<<<<<< HEAD
                     <div class="d little">\
                         <div class="v l">\
-                            <span class="oct">octave:{{octave}}</span>\
+                            <span class="oct">octave:{{octaveLayer}}</span>\
                         </div>\
                     </div>\
                     <div class="dpad">\
-                        <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
-                        <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
+                        <div class="up" @click="$emit(\'moreOctaveEvent\')"><span class="figureblock u"></span></div>\
+                        <div class="down" @click="$emit(\'lessOctaveEvent\')"><span class="figureblock dd"> </span></div>\
                     </div>\
                 </div>\
                 <div class="layer-sound-controller">\
-                    <button class=" beat pplay" :class="{ prelistenActive : prelistenLayer }" @click="prelistenLayer=!prelistenLayer"></button>\
-                    <button class="beat mute" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted"></button>\
+                    <button class=" beat pplay" :class="{ prelistenActive : prelistenLayer }" @click="$emit(\'togglePrelistenLayerEvent\')"></button>\
+                    <button class="beat mute" :class="{ muteActive : muteLayer }" @click="$emit(\'toggleMuteLayerEvent\')"></button>\
                     <button class="beat clear" @click="clearLayer"></button>\
-=======
-                    <div class="octave-viewer">Octave: {{octaveLayer}} </div>\
-                    <button class="layer-btn" @click="$emit(\'moreOctaveEvent\')"> + </button>\
-                    <button class="layer-btn" @click="$emit(\'lessOctaveEvent\')"> - </button>\
-                </div>\
-                <div class="layer-sound-controller">\
-                    <button class="layer-btn prelisten-btn" :class="{ prelistenActive : prelistenLayer }" @click="$emit(\'togglePrelistenLayerEvent\')">L</button>\
-                    <button class="layer-btn mute-btn" :class="{ muteActive : muteLayer }" @click="$emit(\'toggleMuteLayerEvent\')">M</button>\
-                    <button class="layer-btn clear-btn" @click="clearLayer">C</button>\
->>>>>>> 0c2b919ad8af77ec23c6bd113f45ca806fe6aae7
                 </div>\
             </div>\
         </div>\
@@ -708,11 +677,10 @@ let sequencerComponent = {
                     :selectedScale="allLayersScale"\
                 ></scale-selector-component>\
                 <div class="octave-sound-controller">\
-<<<<<<< HEAD
                 <div id="octave-selector" class="repos">\
                     <div class="d little">\
                         <div class="v l">\
-                            <span class="oct">octave:{{octave}}</span>\
+                            <span class="oct">octave:{{allLayersOctave}}</span>\
                         </div>\
                     </div>\
                     <div class="dpad">\
@@ -721,20 +689,9 @@ let sequencerComponent = {
                     </div>\
                 </div>\
                     <div class="layer-sound-controller uni">\
-                        <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem"></button>\
-                        <button class="mute un" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted"></button>\
+                        <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="togglePrelistenSystem"></button>\
+                        <button class="mute un" :class="{ muteActive : muteSystem }" @click="toggleMuteSystem"></button>\
                         <button class="clear un" @click="clearSystem"></button>\
-=======
-                    <div id="octave-selector">\
-                        <div class="octave-viewer">Octave: {{allLayersOctave}} </div>\
-                        <button @click="moreOctave"> + </button>\
-                        <button @click="lessOctave"> - </button>\
-                    </div>\
-                    <div class="layer-sound-controller">\
-                        <button class="layer-btn prelisten-btn" :class="{ prelistenActive : prelistenSystem }" @click="togglePrelistenSystem">L</button>\
-                        <button class="layer-btn mute-btn" :class="{ muteActive : muteSystem }" @click="toggleMuteSystem">M</button>\
-                        <button class="layer-btn clear-btn" @click="clearSystem">C</button>\
->>>>>>> 0c2b919ad8af77ec23c6bd113f45ca806fe6aae7
                     </div>\
                 </div>\
             </div>\
