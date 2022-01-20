@@ -431,7 +431,7 @@ let columnComponent = {
 let layerComponent = {
     template:'\
         <div class="layer">\
-            <div class="layer-labels">\
+            <div class="layer-labels" ref="labelsbox">\
                 <div v-if="inst_id==3">\
                     <p class="key-label" v-for="k in tonesInScale">{{drum_keyboard[tonesInScale-k]}}</p>\
                 </div>\
@@ -459,7 +459,7 @@ let layerComponent = {
                 </div>\
             </div>\
             \
-            <div v-if="!unifiedControl" class="layer-controller">\
+            <div v-if="!unifiedControl" class="layer-controller" ref="controllerbox">\
                 <div id="buttons">\
                     <button id="addKey-btn" class= "spin circle" @click="$emit(\'addKeyEvent\')"> + </button>\
                     <button id="removeKey-btn" class= "spin circle" @click="$emit(\'removeKeyEvent\')"> - </button>\
@@ -511,6 +511,8 @@ let layerComponent = {
         scale: { default:'Major' },
         scale_keyboard : { default: ["C4","D4","E4","F4","G4","A4","B4","C5"] },
         drum_keyboard : { default: ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"] },
+
+        window_width: Number
     },
     
     data() {
@@ -520,6 +522,9 @@ let layerComponent = {
             tonesInScale: 8,
             keyboard: '',
             octave: 4,
+
+            labels_width: null,
+            controller_width: null
         }
     },
 
@@ -528,6 +533,9 @@ let layerComponent = {
             if(val==0){
                 this.$emit('restartEvent');
             }
+        },
+        'unifiedControl': function() {
+            this.$emit('unifyCalledEvent');
         }
     },
     
@@ -539,8 +547,7 @@ let layerComponent = {
             return Number(this.total_duration/(this.num_beats));
         },
         cssVars() {
-            var layerWidth = 1200;
-            //var layerWidth = 1200/this.num_bars; to make it adaptive
+            var layerWidth = this.window_width-this.labels_width-this.controller_width-28;
             var margin = 5;
             var borderKey = 3;
             var keyHeight = 18;
@@ -645,7 +652,22 @@ let layerComponent = {
         clearLayer(){
             for(var idx=0; idx<this.$refs.beats_refs.length; idx++) { 
                 this.$refs.beats_refs[idx].clearAllKeys() }
+        },
+        getElementSizes(){
+            this.labels_width=this.$refs.labelsbox.clientWidth+36;
+            if(!this.unifiedControl)
+            this.controller_width=this.$refs.controllerbox.clientWidth+8;
+            else
+            this.controller_width=0;
         }
+    },
+    mounted(){
+        this.getElementSizes()
+        this.$on('unifyCalledEvent', () => {
+            Vue.nextTick(() =>{
+                this.getElementSizes()
+            })
+        })
     },
 };
 
@@ -653,56 +675,58 @@ let sequencerComponent = {
 
     template: '\
         <div>\
-            <div class="d">\
-                <div class="v left">\
-                    <span class="bpm">BPM: {{bpm}}</span>\
+            <div id="upper-sticky-container" ref="upperbox">\
+                <div class="d">\
+                    <div class="v left">\
+                        <span class="bpm">BPM: {{bpm}}</span>\
+                    </div>\
+                    <div class="v right">\
+                        <span class="inst">Selected instrument: {{inst_name[inst_id-1]}}</span>\
+                    </div>\
                 </div>\
-                <div class="v right">\
-                    <span class="inst">Selected instrument: {{inst_name[inst_id-1]}}</span>\
+                <div class="barcont">\
+                    <div class="bars view">Bars: {{n_bars}}</div>\
+                    <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
+                    <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
                 </div>\
-            </div>\
-            <div class="barcont">\
-                <div class="bars view">Bars: {{n_bars}}</div>\
-                <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
-                <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
-            </div>\
-            <div class="imagecontainer">\
-                <div class="logo"></div>\
-            </div>\
-            <controller-component\
-                @newLayerEvent="addLayer"\
-                @bpmEvent="updateBPM"\
-                @playAllEvent="playAll"\
-                @stopAllEvent="stopAll"\
-                @instSelectionEvent="instSelected"\
-                @unifiedControllerEvent="unifiedControl=!unifiedControl"\
-                @durationEvent="changeDuration"\
-            ></controller-component>\
-            \
-            <div v-if="unifiedControl" class="layer-controller unified">\
-                <key-selector-component\
-                    @keySelectedEvent="printKey">\
-                </key-selector-component>\
-                <scale-selector-component\
-                    @scaleSelectedEvent="printScale">\
-                </scale-selector-component>\
-                <div class="octave-sound-controller">\
-                <div id="octave-selector" class="repos">\
-                    <div class="d little">\
-                        <div class="v l">\
-                            <span class="oct">octave:{{octave}}</span>\
+                <div class="imagecontainer">\
+                    <div class="logo"></div>\
+                </div>\
+                <controller-component\
+                    @newLayerEvent="addLayer"\
+                    @bpmEvent="updateBPM"\
+                    @playAllEvent="playAll"\
+                    @stopAllEvent="stopAll"\
+                    @instSelectionEvent="instSelected"\
+                    @unifiedControllerEvent="unifiedControl=!unifiedControl"\
+                    @durationEvent="changeDuration"\
+                ></controller-component>\
+                \
+                <div v-if="unifiedControl" class="layer-controller unified">\
+                    <key-selector-component\
+                        @keySelectedEvent="printKey">\
+                    </key-selector-component>\
+                    <scale-selector-component\
+                        @scaleSelectedEvent="printScale">\
+                    </scale-selector-component>\
+                    <div class="octave-sound-controller">\
+                    <div id="octave-selector" class="repos">\
+                        <div class="d little">\
+                            <div class="v l">\
+                                <span class="oct">octave:{{octave}}</span>\
+                            </div>\
+                        </div>\
+                        <div class="dpad">\
+                            <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
+                            <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
                         </div>\
                     </div>\
-                    <div class="dpad">\
-                        <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
-                        <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
                     </div>\
-                </div>\
-                    <div class="layer-sound-controller uni">\
-                        <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem"></button>\
-                        <button class="mute un" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted"></button>\
-                        <button class="clear un" @click="clearSystem"></button>\
-                    </div>\
+                        <div class="layer-sound-controller uni">\
+                            <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem"></button>\
+                            <button class="mute un" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted"></button>\
+                            <button class="clear un" @click="clearSystem"></button>\
+                        </div>\
                 </div>\
             </div>\
             \
@@ -718,6 +742,7 @@ let sequencerComponent = {
                     :layerMuted="sequencerMuted"\
                     :unifiedControl="unifiedControl"\
                     :duration="duration"\
+                    :window_width="window_width"\
                     @remove="layers.splice(index,1)"\
                     @addKeyEvent="if(!systemPlaying && layer.num_beats < 12 )layer.num_beats++"\
                     @removeKeyEvent="if(!systemPlaying && layer.num_beats > 1 )layer.num_beats--"\
@@ -726,7 +751,7 @@ let sequencerComponent = {
             </div>\
         </div>\
     ',
-    
+
     components: {
         'layer-component' : layerComponent,
         'controller-component' : controllerComponent,
@@ -758,7 +783,8 @@ let sequencerComponent = {
             inst_id: 1,
             inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
             n_bars:1,
-            duration:["16n","16n"]
+            duration:["16n","16n"],
+            window_width: null
         }
     },
 
@@ -849,8 +875,18 @@ let sequencerComponent = {
         },
         changeDuration(inst_id,duration){
             this.duration[inst_id-1]=20-duration*4+"n"
+        },
+        resized(){
+                this.window_width=this.$refs.upperbox.clientWidth
         }
-    }
+    },
+    mounted() {
+        this.window_width=this.$refs.upperbox.clientWidth
+        window.addEventListener('resize', this.resized)
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.resized)
+      },
 }
 
 var app = new Vue({
