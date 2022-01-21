@@ -536,7 +536,7 @@ let layerComponent = {
             octave: 4,
 
             labels_width: null,
-            controller_width: null
+            controller_width: null,
           
             scale_keyboard : ["C4","D4","E4","F4","G4","A4","B4","C5"],
             drum_keyboard : ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"],
@@ -551,8 +551,6 @@ let layerComponent = {
         },
         'unifiedControl': function() {
             this.$emit('unifyCalledEvent');
-        }
-            if(val==0){ this.$emit('restartEvent'); }
         },
         'keyLayer': function(val) {
             this.$emit('changedKeyEvent', val);
@@ -687,55 +685,45 @@ let sequencerComponent = {
                     <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
                     <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
                 </div>\
-            </div>\
-            <div class="barcont">\
-                <div class="bars view">Bars: {{n_bars}}</div>\
-                <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
-                <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
-            </div>\
-            <div class="imagecontainer">\
-                <div class="logo"></div>\
-            </div>\
-            \
-            <controller-component\
-                @unifiedControllerEvent="unifiedControl=!unifiedControl"\
-                @newLayerEvent="addLayer"\
-                @bpmEvent="updateBPM"\
-                @instSelectionEvent="instSelected"\
-                @durationEvent="changeDuration"\
-                @playAllEvent="playAll"\
-                @stopAllEvent="stopAll"\
-            ></controller-component>\
-            \
-            <div v-if="unifiedControl" class="layer-controller unified">\
-                <key-selector-component @keySelectedEvent="changeKey"\
-                    :selectedKey="allLayersKey"\
-                ></key-selector-component>\
-                <scale-selector-component @scaleSelectedEvent="changeScale"\
-                    :selectedScale="allLayersScale"\
-                ></scale-selector-component>\
-                <div class="octave-sound-controller">\
-                <div id="octave-selector" class="repos">\
-                    <div class="d little">\
-                        <div class="v l">\
-                            <span class="oct">octave:{{allLayersOctave}}</span>\
-                        </div>\
-                    </div>\
-                    <div class="dpad">\
-                        <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
-                        <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
-                    </div>\
+                <div class="imagecontainer">\
+                    <div class="logo"></div>\
                 </div>\
-                    <div class="layer-sound-controller uni">\
-                        <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="togglePrelistenSystem"></button>\
-                        <button class="mute un" :class="{ muteActive : muteSystem }" @click="toggleMuteSystem"></button>\
-                        <button class="clear un" @click="clearSystem"></button>\
+                \
+                <controller-component\
+                    @unifiedControllerEvent="unifiedControl=!unifiedControl"\
+                    @newLayerEvent="addLayer"\
+                    @bpmEvent="updateBPM"\
+                    @instSelectionEvent="instSelected"\
+                    @durationEvent="changeDuration"\
+                    @playAllEvent="playAll"\
+                    @stopAllEvent="stopAll"\
+                ></controller-component>\
+                \
+                <div v-if="unifiedControl" class="layer-controller unified">\
+                    <key-selector-component @keySelectedEvent="changeKey"\
+                        :selectedKey="allLayersKey"\
+                    ></key-selector-component>\
+                    <scale-selector-component @scaleSelectedEvent="changeScale"\
+                        :selectedScale="allLayersScale"\
+                    ></scale-selector-component>\
+                    <div class="octave-sound-controller">\
+                    <div id="octave-selector" class="repos">\
+                        <div class="d little">\
+                            <div class="v l">\
+                                <span class="oct">octave:{{allLayersOctave}}</span>\
+                            </div>\
+                        </div>\
+                        <div class="dpad">\
+                            <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
+                            <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
+                        </div>\
                     </div>\
                         <div class="layer-sound-controller uni">\
-                            <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem"></button>\
-                            <button class="mute un" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted"></button>\
+                            <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="togglePrelistenSystem"></button>\
+                            <button class="mute un" :class="{ muteActive : muteSystem }" @click="toggleMuteSystem"></button>\
                             <button class="clear un" @click="clearSystem"></button>\
                         </div>\
+                    </div>\
                 </div>\
             </div>\
             \
