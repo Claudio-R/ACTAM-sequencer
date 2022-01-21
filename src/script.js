@@ -17,16 +17,18 @@ let instSelComponent = {
                     @mouseleave="menu=false"\
                     :style="cssVars">\
                 </div>\
-                <div class="inst-menu"\
+                <div class="inst-menu-container"\
                     @mouseover="menu=true"\
-                    @mouseleave="menu=false"\
-                    v-show="menu">\
-                        <label>Volume:<label>\
-                        <input type="range" min="-40" max="3" class="slider" v-model="volume"></input>\
-                        <div v-if="id!=3">\
-                        <label>Duration:<label>\
-                        <input type="range" min="0" max="4" class="slider" v-model="duration"></input>\
-                        </div>\
+                    @mouseleave="menu=false">\
+                    <div class="inst-menu"\
+                        v-show="menu">\
+                            <label>Volume:<label>\
+                            <input type="range" min="-40" max="3" class="slider" v-model="volume"></input>\
+                            <div v-if="id!=3">\
+                            <label>Duration:<label>\
+                            <input type="range" min="0" max="4" class="slider" v-model="duration"></input>\
+                            </div>\
+                    </div>\
                 </div>\
             </div>\
     ',
@@ -442,7 +444,7 @@ let columnComponent = {
 let layerComponent = {
     template:'\
         <div class="layer">\
-            <div class="layer-labels">\
+            <div class="layer-labels" ref="labelsbox">\
                 <div v-if="inst_id==3">\
                     <p class="key-label" v-for="k in tonesInScale">{{drum_keyboard[tonesInScale-k]}}</p>\
                 </div>\
@@ -470,7 +472,7 @@ let layerComponent = {
                 </div>\
             </div>\
             \
-            <div v-if="!unifiedControl" class="layer-controller">\
+            <div v-if="!unifiedControl" class="layer-controller" ref="controllerbox">\
                 <div id="buttons">\
                     <button id="addKey-btn" class= "spin circle" @click="$emit(\'addKeyEvent\')"> + </button>\
                     <button id="removeKey-btn" class= "spin circle" @click="$emit(\'removeKeyEvent\')"> - </button>\
@@ -521,6 +523,8 @@ let layerComponent = {
         scaleLayer: String,
         prelistenLayer: Boolean,
         muteLayer: Boolean,
+        window_width: Number
+
     },
     
     data() {
@@ -529,6 +533,11 @@ let layerComponent = {
             my_clock: '',
             tonesInScale: 8,
             keyboard: '',
+            octave: 4,
+
+            labels_width: null,
+            controller_width: null
+          
             scale_keyboard : ["C4","D4","E4","F4","G4","A4","B4","C5"],
             drum_keyboard : ["kick", "snare", "tom 1","tom 2","closed hh", "open hh", "ride","cowbell"],
         }
@@ -536,6 +545,13 @@ let layerComponent = {
 
     watch: {
         'isPlaying': function(val) {
+            if(val==0){
+                this.$emit('restartEvent');
+            }
+        },
+        'unifiedControl': function() {
+            this.$emit('unifyCalledEvent');
+        }
             if(val==0){ this.$emit('restartEvent'); }
         },
         'keyLayer': function(val) {
@@ -555,7 +571,7 @@ let layerComponent = {
     computed: {
         my_beat_duration() { return Number(this.total_duration/(this.num_beats)); },
         cssVars() {
-            var layerWidth = 1200;
+            var layerWidth = this.window_width-this.labels_width-this.controller_width-28;
             var margin = 5;
             var borderKey = 3;
             var keyHeight = 18;
@@ -635,6 +651,21 @@ let layerComponent = {
             for(var idx=0; idx<this.$refs.beats_refs.length; idx++) { 
                 this.$refs.beats_refs[idx].clearAllKeys() }
         },
+        getElementSizes(){
+            this.labels_width=this.$refs.labelsbox.clientWidth+36;
+            if(!this.unifiedControl)
+            this.controller_width=this.$refs.controllerbox.clientWidth+8;
+            else
+            this.controller_width=0;
+        }
+    },
+    mounted(){
+        this.getElementSizes()
+        this.$on('unifyCalledEvent', () => {
+            Vue.nextTick(() =>{
+                this.getElementSizes()
+            })
+        })
     },
 };
 
@@ -642,12 +673,19 @@ let sequencerComponent = {
 
     template: '\
         <div>\
-            <div class="d">\
-                <div class="v left">\
-                    <span class="bpm">BPM: {{bpm}}</span>\
+            <div id="upper-sticky-container" ref="upperbox">\
+                <div class="d">\
+                    <div class="v left">\
+                        <span class="bpm">BPM: {{bpm}}</span>\
+                    </div>\
+                    <div class="v right">\
+                        <span class="inst">Selected instrument: {{inst_name[inst_id-1]}}</span>\
+                    </div>\
                 </div>\
-                <div class="v right">\
-                    <span class="inst">Selected instrument: {{inst_name[inst_id-1]}}</span>\
+                <div class="barcont">\
+                    <div class="bars view">Bars: {{n_bars}}</div>\
+                    <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
+                    <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
                 </div>\
             </div>\
             <div class="barcont">\
@@ -693,6 +731,11 @@ let sequencerComponent = {
                         <button class="mute un" :class="{ muteActive : muteSystem }" @click="toggleMuteSystem"></button>\
                         <button class="clear un" @click="clearSystem"></button>\
                     </div>\
+                        <div class="layer-sound-controller uni">\
+                            <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="prelistenSystem=!prelistenSystem"></button>\
+                            <button class="mute un" :class="{ muteActive : sequencerMuted }" @click="sequencerMuted=!sequencerMuted"></button>\
+                            <button class="clear un" @click="clearSystem"></button>\
+                        </div>\
                 </div>\
             </div>\
             \
@@ -703,6 +746,7 @@ let sequencerComponent = {
                     :n_bars="n_bars"\
                     :inst_id="inst_id"\
                     :duration="duration"\
+                    :window_width="window_width"\
                     :total_duration="total_duration"\
                     :key="layer.id"\
                     :num_beats="layer.num_beats"\
@@ -725,7 +769,7 @@ let sequencerComponent = {
             </div>\
         </div>\
     ',
-    
+
     components: {
         'layer-component' : layerComponent,
         'controller-component' : controllerComponent,
@@ -772,7 +816,12 @@ let sequencerComponent = {
                     prelistenLayer: true,
                     muteLayer: false,
                 },
-            ],   
+            ],
+            inst_id: 1,
+            inst_name: ['nome_strumento1','nome_strumento2','drum: TR-808'], /*mettere nomi degli strumenti*/
+            n_bars:1,
+            duration:["16n","16n"],
+            window_width: null
         }
     },
 
@@ -884,7 +933,20 @@ let sequencerComponent = {
                 this.$refs.layers_refs[idx].clearLayer();
             }
         },
-    }
+        changeDuration(inst_id,duration){
+            this.duration[inst_id-1]=20-duration*4+"n"
+        },
+        resized(){
+                this.window_width=this.$refs.upperbox.clientWidth
+        }
+    },
+    mounted() {
+        this.window_width=this.$refs.upperbox.clientWidth
+        window.addEventListener('resize', this.resized)
+    },
+    beforeDestroy() {
+        window.removeEventListener('resize', this.resized)
+    },
 }
 
 var app = new Vue({
