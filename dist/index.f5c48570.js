@@ -525,6 +525,7 @@ var _storage = require("firebase/storage");
  * 1. check dynamic update of bpm --UPDATE NON NE VENGO A CAPO
  * 2. check if slider visualization now works --FOLDATO NON è IMPORTANTE PER IL MOMENTO
  * 4. provare a gestire key e scale con v-model -- UPDATE CREATA VARIABILE
+ * 3. sistemare pulsanti ed essere sicuri che lo stato venga preservato quando cambio il controller
 */ Vue.config.devtools = true;
 let instSelComponent = {
     template: '\
@@ -535,16 +536,18 @@ let instSelComponent = {
                     @mouseleave="menu=false"\
                     :style="cssVars">\
                 </div>\
-                <div class="inst-menu"\
+                <div class="inst-menu-container"\
                     @mouseover="menu=true"\
-                    @mouseleave="menu=false"\
-                    v-show="menu">\
-                        <label>Volume:<label>\
-                        <input type="range" min="-40" max="3" v-model="volume"></input>\
-                        <div v-if="id!=3">\
-                        <label>Duration:<label>\
-                        <input type="range" min="0" max="5" v-model="duration"></input>\
-                        </div>\
+                    @mouseleave="menu=false">\
+                    <div class="inst-menu"\
+                        v-show="menu">\
+                            <label>Volume:<label>\
+                            <input type="range" min="-40" max="3" class="slider" v-model="volume"></input>\
+                            <div v-if="id!=3">\
+                            <label>Duration:<label>\
+                            <input type="range" min="0" max="4" class="slider" v-model="duration"></input>\
+                            </div>\
+                    </div>\
                 </div>\
             </div>\
     ',
@@ -573,12 +576,12 @@ let instSelComponent = {
     },
     computed: {
         cssVars () {
-            activeCSScolors = [
+            var activeCSScolors = [
                 'rgb(255, 0, 0)',
                 'rgb(0, 0, 255)',
                 'rgb(0, 255, 0)'
             ];
-            passiveCSScolors = [
+            var passiveCSScolors = [
                 'rgb(120, 0, 0)',
                 'rgb(0, 0, 120)',
                 'rgb(0, 120, 0)'
@@ -598,32 +601,35 @@ let instSelComponent = {
             if (this.id == 1) synth1.volume.value = this.volume;
             if (this.id == 2) synth2.volume.value = this.volume;
             if (this.id == 3) for(i = 0; i < 8; i++)drum[i].volume.value = this.volume;
+        },
+        'duration': function() {
+            this.$emit('durationChangeEvent', this.id, this.duration);
         }
     }
 };
 let controllerComponent = {
     template: '\
        <div class="controller">\
-            <input class="text-input" type="number" v-model="newInput" placeholder="Add a layer (press enter)" @keyup.enter="addLayer">\
-            <input class="text-input" type="number" v-model="bpm_value" placeholder="Select bpm (press enter)" @keyup.enter="updateBPM">\
-            <button class="btn-1" @click="$emit(\'playAllEvent\')">Play</button>\
-            <button class="btn-1" @click="$emit(\'stopAllEvent\')">Stop</button>\
-            <label>Instrument:</label>\
+            <div class="btn-1" @click="$emit(\'playAllEvent\')">▶</div>\
+            <div class="btn-1 st" @click="$emit(\'stopAllEvent\')">■</div>\
+            <input class="text-input border" type="number" v-model="newInput" placeholder="Add a layer" @keyup.enter="addLayer">\
+            <input class="text-input border" type="number" v-model="bpm_value" placeholder="Select bpm" @keyup.enter="updateBPM">\
+            <button class="unif"  @click="$emit(\'unifiedControllerEvent\')">Unify controller</button>\
+            <fieldset>\
+                <legend>instrument</legend>\
+            </fieldset>\
             <inst-component v-for="k in num_inst"\
                 :id="k"\
                 :selected_inst=selected_inst\
-                @instSelectionEvent="instSelection">\
+                @instSelectionEvent="instSelection"\
+                @durationChangeEvent="emitDuration">\
             </inst-component>\
-            <label>Play-on-touch:</label>\
-            <input type="checkbox" class="checkbox" v-model="pot" @click="potChange">\
         </div>\
     ',
     components: {
         'inst-component': instSelComponent
     },
     props: {
-        id: {
-        },
         selected_inst: {
             default: 1
         }
@@ -632,7 +638,6 @@ let controllerComponent = {
         return {
             newInput: '',
             bpm_value: '',
-            pot: true,
             num_inst: 3
         };
     },
@@ -657,8 +662,8 @@ let controllerComponent = {
             this.$emit('instSelectionEvent', inst_id);
             this.selected_inst = inst_id;
         },
-        potChange () {
-            this.$emit('potEvent', !this.pot);
+        emitDuration (inst_id, duration) {
+            this.$emit('durationEvent', inst_id, duration);
         }
     }
 };
@@ -681,9 +686,12 @@ let scaleSelectorComponent = {
     components: {
         'menu-element-component': menuElementcomponent
     },
+    props: [
+        'selectedScale'
+    ],
     data () {
         return {
-            selectedScale: 'Major',
+            //selectedScale: 'Major',
             scales: [
                 'Major',
                 'Minor',
@@ -697,7 +705,7 @@ let scaleSelectorComponent = {
     },
     methods: {
         selectScale (scale) {
-            this.selectedScale = scale;
+            //this.selectedScale = scale;
             this.$emit('scaleSelectedEvent', scale);
         }
     }
@@ -715,9 +723,11 @@ let keySelectorComponent = {
     components: {
         'menu-element-component': menuElementcomponent
     },
+    props: [
+        'selectedKey'
+    ],
     data () {
         return {
-            selectedKey: 'C',
             keys: [
                 'C',
                 'Db',
@@ -736,7 +746,6 @@ let keySelectorComponent = {
     },
     methods: {
         selectKey (note) {
-            this.selectedKey = note;
             this.$emit('keySelectedEvent', note);
         }
     }
@@ -751,55 +760,48 @@ let keyComponent = {
         </div>\
     ',
     props: {
-        beatId: {
-            type: Number
-        },
         keyId: {
             type: Number
         },
-        state1: {
-            default: false
-        },
-        state2: {
-            default: false
-        },
-        state3: {
-            default: false
-        },
-        pot: {
-            type: Boolean
-        },
-        beatMuted: {
-            type: Boolean,
-            default: false
-        },
-        layerMuted: {
-            type: Boolean,
-            default: false
-        },
-        isPlaying: {
+        beatId: {
             type: Number
         },
         inst_selected: {
             type: Number
         },
-        last_color: {
-            type: Number,
-            default: 0
+        prelistenBeat: {
+            type: Boolean,
+            default: true
         },
-        very_last_color: {
-            type: Number,
-            default: 0
+        muteBeat: {
+            type: Boolean,
+            default: true
+        },
+        muteLayer: {
+            type: Boolean,
+            default: true
+        },
+        isPlaying: {
+            type: Number
         }
+    },
+    data () {
+        return {
+            state1: false,
+            state2: false,
+            state3: false,
+            last_color: 0,
+            very_last_color: 0
+        };
     },
     watch: {
         'isPlaying': function() {
-            if (!this.layerMuted && !this.beatMuted && this.isPlaying == this.beatId) this.playKey();
+            if (!this.muteBeat && this.isPlaying == this.beatId) this.playKey();
         }
     },
     computed: {
         cssVars () {
-            CSScolors = [
+            var CSScolors = [
                 'rgb(255, 0, 0)',
                 'rgb(0, 0, 255)',
                 'rgb(0, 255, 0)'
@@ -859,15 +861,15 @@ let keyComponent = {
             switch(this.inst_selected){
                 case 1:
                     this.state1 = !this.state1;
-                    if (!this.layerMuted && !this.beatMuted && this.state1 && this.pot) this.$emit('playSound1Event', this.keyId);
+                    if (!this.muteBeat && this.prelistenBeat && this.state1) this.$emit('playSound1Event', this.keyId);
                     break;
                 case 2:
                     this.state2 = !this.state2;
-                    if (!this.layerMuted && !this.beatMuted && this.state2 && this.pot) this.$emit('playSound2Event', this.keyId);
+                    if (!this.muteBeat && this.prelistenBeat && this.state2) this.$emit('playSound2Event', this.keyId);
                     break;
                 case 3:
                     this.state3 = !this.state3;
-                    if (!this.layerMuted && !this.beatMuted && this.state3 && this.pot) this.$emit('playSound3Event', this.keyId);
+                    if (!this.muteBeat && this.prelistenBeat && this.state3) this.$emit('playSound3Event', this.keyId);
                     break;
             }
         },
@@ -894,21 +896,21 @@ let columnComponent = {
             <key-component v-for="k in tonesInScale"\
                 class="keyback"\
                 ref="keys_refs"\
-                :isPlaying="isPlaying"\
-                :inst_selected="inst_selected"\
-                :beatId="beatId"\
                 :keyId=tonesInScale-k\
-                :beatMuted="beatMuted"\
-                :layerMuted="layerMuted"\
-                :pot="pot"\
+                :beatId="beatId"\
+                :inst_selected="inst_selected"\
+                :prelistenBeat="prelistenBeat"\
+                :muteBeat="muteBeat"\
+                :muteLayer="muteLayer"\
+                :isPlaying="isPlaying"\
                 @playSound1Event="playInst1"\
                 @playSound2Event="playInst2"\
                 @playSound3Event="playInst3"\
             ></key-component>\
             <div id="beat-controller">\
-                <button class="beat-btn monitor-btn" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }">P</button>\
-                <button class="beat-btn mute-btn" :class="{ muteActive : beatMuted }" @click="beatMuted=!beatMuted">M</button>\
-                <button class="beat-btn clear-btn" @click="clearAllKeys">C</button>\
+                <button class="beat pplay" @click="for(var idx=0; idx<tonesInScale; idx++) { $refs.keys_refs[idx].playKey() }"></button>\
+                <button class="beat mute" :class="{ muteActive : muteBeat }" @click="muteBeat=!muteBeat"></button>\
+                <button class="beat clear" @click="clearAllKeys"></button>\
             </div>\
         </div>\
     ',
@@ -917,24 +919,30 @@ let columnComponent = {
     },
     props: [
         'beatId',
-        'layerMuted',
-        'tonesInScale',
-        "inst_selected",
+        'inst_selected',
+        'duration',
+        'prelistenBeat',
+        'muteLayer',
         'isPlaying',
-        'scale_keyboard',
-        'pot'
+        'tonesInScale',
+        'scale_keyboard'
     ],
     data () {
         return {
-            beatMuted: false
+            muteBeat: false
         };
+    },
+    watch: {
+        'muteLayer': function(val) {
+            this.muteBeat = val;
+        }
     },
     methods: {
         playInst1 (keyId) {
-            synth1.triggerAttackRelease(this.scale_keyboard[keyId], "16n");
+            synth1.triggerAttackRelease(this.scale_keyboard[keyId], this.duration[0]);
         },
         playInst2 (keyId) {
-            synth2.triggerAttackRelease(this.scale_keyboard[keyId], "16n");
+            synth2.triggerAttackRelease(this.scale_keyboard[keyId], this.duration[1]);
         },
         playInst3 (keyId) {
             drum[keyId].start();
@@ -968,14 +976,16 @@ let columnComponent = {
 let layerComponent = {
     template: '\
         <div class="layer">\
-            <div class="layer-labels">\
+            <div class="layer-labels" ref="labelsbox">\
                 <div v-if="inst_id==3">\
                     <p class="key-label" v-for="k in tonesInScale">{{drum_keyboard[tonesInScale-k]}}</p>\
                 </div>\
                 <div v-else>\
                     <p class="key-label" v-for="k in tonesInScale">{{scale_keyboard[tonesInScale-k].slice(0, -1)}}</p>\
                 </div>\
+                <button id="remove-btn" class="btr" @click="$emit(\'removeLayerEvent\')">Remove layer</button>\
             </div>\
+            \
             <div v-for="j in n_bars">\
                 <div class="keyboard">\
                     <column-component v-for="k in num_beats"\
@@ -983,35 +993,43 @@ let layerComponent = {
                         ref = beats_refs\
                         :class="{playing : k*j-(k-num_beats)*(j-1) === isPlaying + 1}"\
                         :beatId="k*j-1-(k-num_beats)*(j-1)"\
-                        :layerMuted="layerMuted"\
-                        :isPlaying="isPlaying"\
                         :inst_selected="inst_id"\
-                        :scale_keyboard="scale_keyboard"\
+                        :duration="duration"\
+                        :prelistenBeat="prelistenLayer"\
+                        :muteLayer="muteLayer"\
+                        :isPlaying="isPlaying"\
                         :tonesInScale="tonesInScale"\
-                        :pot="pot"\
+                        :scale_keyboard="scale_keyboard"\
                     ></column-component>\
                 </div>\
             </div>\
-            <div class="layer-controller">\
+            \
+            <div v-if="!unifiedControl" class="layer-controller" ref="controllerbox">\
                 <div id="buttons">\
-                    <button id="remove-btn" @click="$emit(\'remove\')">Remove layer</button>\
-                    <button id="addKey-btn" @click="$emit(\'addKeyEvent\')"> + </button>\
-                    <button id="removeKey-btn" @click="$emit(\'removeKeyEvent\')"> - </button>\
+                    <button id="addKey-btn" class= "spin circle" @click="$emit(\'addKeyEvent\')"> + </button>\
+                    <button id="removeKey-btn" class= "spin circle" @click="$emit(\'removeKeyEvent\')"> - </button>\
                 </div>\
-                <key-selector-component\
-                    @keySelectedEvent="printKey">\
-                </key-selector-component>\
-                <scale-selector-component\
-                    @scaleSelectedEvent="printScale">\
-                </scale-selector-component>\
+                <key-selector-component :selectedKey="keyLayer"\
+                    @keySelectedEvent="function(val){$emit(\'keySelectedEvent\',val)}"\
+                ></key-selector-component>\
+                <scale-selector-component :selectedScale="scaleLayer"\
+                    @scaleSelectedEvent="function(val){$emit(\'scaleSelectedEvent\',val)}"\
+                ></scale-selector-component>\
                 <div id="octave-selector">\
-                    <div class="octave-viewer">Octave: {{octave}} </div>\
-                    <button class="layer-btn" id="addKey-btn" @click="moreOctave"> + </button>\
-                    <button class="layer-btn" @click="lessOctave"> - </button>\
+                    <div class="d little">\
+                        <div class="v l">\
+                            <span class="oct">octave:{{octaveLayer}}</span>\
+                        </div>\
+                    </div>\
+                    <div class="dpad">\
+                        <div class="up" @click="$emit(\'moreOctaveEvent\')"><span class="figureblock u"></span></div>\
+                        <div class="down" @click="$emit(\'lessOctaveEvent\')"><span class="figureblock dd"> </span></div>\
+                    </div>\
                 </div>\
                 <div class="layer-sound-controller">\
-                    <button class="layer-btn mute-btn" :class="{ muteActive : layerMuted }" @click="layerMuted=!layerMuted">M</button>\
-                    <button class="layer-btn clear-btn" @click="for(var idx=0; idx<$refs.beats_refs.length; idx++) { $refs.beats_refs[idx].clearAllKeys() }">C</button>\
+                    <button class=" beat pplay" :class="{ prelistenActive : prelistenLayer }" @click="$emit(\'togglePrelistenLayerEvent\')"></button>\
+                    <button class="beat mute" :class="{ muteActive : muteLayer }" @click="$emit(\'toggleMuteLayerEvent\')"></button>\
+                    <button class="beat clear" @click="clearLayer"></button>\
                 </div>\
             </div>\
         </div>\
@@ -1022,19 +1040,29 @@ let layerComponent = {
         'key-selector-component': keySelectorComponent
     },
     props: {
-        num_beats: Number,
-        total_duration: Number,
-        inst_id: Number,
+        /** sequencer controller */ unifiedControl: Boolean,
         n_bars: Number,
-        pot: Boolean,
-        key: {
-            default: 'C'
-        },
-        scale: {
-            default: 'Major'
-        },
-        scale_keyboard: {
-            default: [
+        inst_id: Number,
+        duration: Array,
+        total_duration: Number,
+        /** state variables */ num_beats: Number,
+        octaveLayer: Number,
+        keyLayer: String,
+        scaleLayer: String,
+        prelistenLayer: Boolean,
+        muteLayer: Boolean,
+        window_width: Number
+    },
+    data () {
+        return {
+            isPlaying: -1,
+            my_clock: '',
+            tonesInScale: 8,
+            keyboard: '',
+            octave: 4,
+            labels_width: null,
+            controller_width: null,
+            scale_keyboard: [
                 "C4",
                 "D4",
                 "E4",
@@ -1043,10 +1071,8 @@ let layerComponent = {
                 "A4",
                 "B4",
                 "C5"
-            ]
-        },
-        drum_keyboard: {
-            default: [
+            ],
+            drum_keyboard: [
                 "kick",
                 "snare",
                 "tom 1",
@@ -1056,40 +1082,40 @@ let layerComponent = {
                 "ride",
                 "cowbell"
             ]
-        }
-    },
-    data () {
-        return {
-            isPlaying: 0,
-            my_clock: '',
-            tonesInScale: 8,
-            keyboard: '',
-            octave: 4,
-            layerMuted: false
         };
     },
     watch: {
         'isPlaying': function(val) {
             if (val == 0) this.$emit('restartEvent');
+        },
+        'unifiedControl': function() {
+            this.$emit('unifyCalledEvent');
+        },
+        'keyLayer': function(val) {
+            this.$emit('changedKeyEvent', val);
+            this.keyboardCreator();
+        },
+        'scaleLayer': function(val) {
+            this.$emit('changedScaleEvent', val);
+            this.keyboardCreator();
+        },
+        'octaveLayer': function(val) {
+            this.$emit('changedOctaveEvent', val);
+            this.keyboardCreator();
         }
     },
     computed: {
-        beatPlaying () {
-            return this.isPlaying;
-        },
         my_beat_duration () {
             return Number(this.total_duration / this.num_beats);
         },
         cssVars () {
-            var layerWidth = 500;
+            var layerWidth = this.window_width - this.labels_width - this.controller_width - 28;
             var margin = 5;
             var borderKey = 3;
             var keyHeight = 18;
-            var barWidth = 500;
             return {
-                '--columnWidth': (layerWidth - this.num_beats * 2 * margin) / (this.num_beats * this.n_bars) + 'px',
-                '--columnHeight': this.tonesInScale * (keyHeight + 2 * borderKey) + 'px',
-                '--barWidth': barWidth / this.n_bars + 'px'
+                '--columnWidth': (layerWidth - this.num_beats * 2 * margin) / this.num_beats + 'px',
+                '--columnHeight': this.tonesInScale * (keyHeight + 2 * borderKey) + 'px'
             };
         }
     },
@@ -1103,16 +1129,6 @@ let layerComponent = {
         play () {
             this.stop();
             this.my_clock = setInterval(this.next, this.my_beat_duration);
-        },
-        printScale (num_scale) {
-            console.log("Selected scale " + num_scale);
-            this.scale = num_scale;
-            this.keyboardCreator();
-        },
-        printKey (num_key) {
-            console.log("Selected key " + num_key);
-            this.key = num_key;
-            this.keyboardCreator();
         },
         keyboardCreator () {
             this.keyboard = [
@@ -1129,37 +1145,37 @@ let layerComponent = {
                 "Bb",
                 "B"
             ];
-            this.keyboard = this.keyboard.map((ele)=>ele + this.octave
+            this.keyboard = this.keyboard.map((ele)=>ele + this.octaveLayer
             );
-            while(this.key + this.octave != this.keyboard[0]){
+            while(this.keyLayer + this.octaveLayer != this.keyboard[0]){
                 first_element = this.keyboard.shift();
-                first_element = first_element.slice(0, -1) + (this.octave + 1);
+                first_element = first_element.slice(0, -1) + (this.octaveLayer + 1);
                 this.keyboard = this.keyboard.concat(first_element);
             }
-            switch(this.scale){
+            switch(this.scaleLayer){
                 case 'Major':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2741 & 1 << index;
                     }); /*101010110101 and reversed = 2741*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octaveLayer + 1));
                     break;
                 case 'Minor':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 1453 & 1 << index;
                     }); /*101101011010 and reversed = 1453*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octaveLayer + 1));
                     break;
                 case 'Melodic Minor':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2733 & 1 << index;
                     }); /*101010101101 and reversed = 2733*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octaveLayer + 1));
                     break;
                 case 'Harmonic Minor':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2477 & 1 << index;
                     }); /*100110101101 and reversed = 2477*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octaveLayer + 1));
                     break;
                 case 'Diminished':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
@@ -1170,25 +1186,17 @@ let layerComponent = {
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 2457 & 1 << index;
                     }); /*10011011001 and reversed = 2457*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
-                    this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octaveLayer + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octaveLayer + 1));
                     break;
                 case 'Hexatonic':
                     this.scale_keyboard = this.keyboard.filter((value, index)=>{
                         return 1365 & 1 << index;
                     }); /*101010101010 and reversed = 1365*/ 
-                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octave + 1));
-                    this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octave + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[0].slice(0, -1) + (this.octaveLayer + 1));
+                    this.scale_keyboard.push(this.scale_keyboard[1].slice(0, -1) + (this.octaveLayer + 1));
                     break;
             }
-        },
-        moreOctave () {
-            this.octave++;
-            this.keyboardCreator();
-        },
-        lessOctave () {
-            this.octave--;
-            this.keyboardCreator();
         },
         addLBar () {
             Vue.nextTick(()=>{
@@ -1199,62 +1207,160 @@ let layerComponent = {
                 //column_states[i]=(newvar)
                 }
             });
+        },
+        clearLayer () {
+            for(var idx = 0; idx < this.$refs.beats_refs.length; idx++)this.$refs.beats_refs[idx].clearAllKeys();
+        },
+        getElementSizes () {
+            this.labels_width = this.$refs.labelsbox.clientWidth + 36;
+            if (!this.unifiedControl) this.controller_width = this.$refs.controllerbox.clientWidth + 8;
+            else this.controller_width = 0;
         }
+    },
+    mounted () {
+        this.getElementSizes();
+        this.$on('unifyCalledEvent', ()=>{
+            Vue.nextTick(()=>{
+                this.getElementSizes();
+            });
+        });
     }
 };
 let sequencerComponent = {
     template: '\
         <div>\
-            <div class="view-box">\
-                <p class="viewer">BPM: {{bpm}}</p>\
-                <p class="viewer">Selected instrument: {{inst_name[inst_id-1]}}</p>\
-                <p class="viewer">Bars: {{n_bars}}</p>\
-                <button id="remove-btn" @click="if(n_bars<4){n_bars++;addBar()}"> + </button>\
-                <button id="addKey-btn" @click="if(n_bars>1){n_bars--}"> - </button>\
+            <div id="upper-sticky-container" ref="upperbox">\
+                <div class="d">\
+                    <div class="v left">\
+                        <span class="bpm">BPM: {{bpm}}</span>\
+                    </div>\
+                    <div class="v right">\
+                        <span class="inst">Selected instrument: {{inst_name[inst_id-1]}}</span>\
+                    </div>\
+                </div>\
+                <div class="barcont">\
+                    <div class="bars view">Bars: {{n_bars}}</div>\
+                    <button class="barminus" @click="if(n_bars>1){n_bars--}"> - </button>\
+                    <button class="barplus" @click="if(n_bars<4){n_bars++; addBar()}"> + </button>\
+                </div>\
+                <div class="imagecontainer">\
+                    <div class="logo"></div>\
+                </div>\
+                \
+                <controller-component\
+                    @unifiedControllerEvent="unifiedControl=!unifiedControl"\
+                    @newLayerEvent="addLayer"\
+                    @bpmEvent="updateBPM"\
+                    @instSelectionEvent="instSelected"\
+                    @durationEvent="changeDuration"\
+                    @playAllEvent="playAll"\
+                    @stopAllEvent="stopAll"\
+                ></controller-component>\
+                \
+                <div v-if="unifiedControl" class="layer-controller unified">\
+                    <key-selector-component @keySelectedEvent="changeKey"\
+                        :selectedKey="allLayersKey"\
+                    ></key-selector-component>\
+                    <scale-selector-component @scaleSelectedEvent="changeScale"\
+                        :selectedScale="allLayersScale"\
+                    ></scale-selector-component>\
+                    <div class="octave-sound-controller">\
+                    <div id="octave-selector" class="repos">\
+                        <div class="d little">\
+                            <div class="v l">\
+                                <span class="oct">octave:{{allLayersOctave}}</span>\
+                            </div>\
+                        </div>\
+                        <div class="dpad">\
+                            <div class="up" @click="moreOctave"><span class="figureblock u"></span></div>\
+                            <div class="down" @click="lessOctave"><span class="figureblock dd"> </span></div>\
+                        </div>\
+                    </div>\
+                        <div class="layer-sound-controller uni">\
+                            <button class="pplay un" :class="{ prelistenActive : prelistenSystem }" @click="togglePrelistenSystem"></button>\
+                            <button class="mute un" :class="{ muteActive : muteSystem }" @click="toggleMuteSystem"></button>\
+                            <button class="clear un" @click="clearSystem"></button>\
+                        </div>\
+                    </div>\
+                </div>\
             </div>\
-            <controller-component\
-                @newLayerEvent="addLayer"\
-                @bpmEvent="updateBPM"\
-                @playAllEvent="playAll"\
-                @stopAllEvent="stopAll"\
-                @instSelectionEvent="instSelected"\
-                @potEvent="potGlobalChange"\
-            ></controller-component>\
+            \
             <div id="layers-container">\
                 <layer-component v-for="(layer,index) in layers"\
                     ref="layers_refs"\
+                    :unifiedControl="unifiedControl"\
+                    :n_bars="n_bars"\
+                    :inst_id="inst_id"\
+                    :duration="duration"\
+                    :window_width="window_width"\
+                    :total_duration="total_duration"\
                     :key="layer.id"\
                     :num_beats="layer.num_beats"\
-                    :total_duration="total_duration"\
-                    :inst_id="inst_id"\
-                    :n_bars="n_bars"\
-                    :pot="pot"\
-                    @remove="layers.splice(index,1)"\
-                    @addKeyEvent="if(!systemPlaying)layer.num_beats++"\
-                    @removeKeyEvent="if(!systemPlaying)layer.num_beats--"\
+                    :octaveLayer="layer.octaveLayer"\
+                    :keyLayer="layer.keyLayer"\
+                    :scaleLayer="layer.scaleLayer"\
+                    :prelistenLayer="layer.prelistenLayer"\
+                    :muteLayer="layer.muteLayer"\
                     @restartEvent="restart(index)"\
+                    @removeLayerEvent="layers.splice(index,1)"\
+                    @addKeyEvent="if(!systemPlaying && layer.num_beats < 12 ) layer.num_beats++"\
+                    @removeKeyEvent="if(!systemPlaying && layer.num_beats > 1 ) layer.num_beats--"\
+                    @keySelectedEvent="function(val) {layer.keyLayer = val}"\
+                    @scaleSelectedEvent="function(val) {layer.scaleLayer = val}"\
+                    @moreOctaveEvent="if(layer.octaveLayer < 6) layer.octaveLayer++"\
+                    @lessOctaveEvent="if(layer.octaveLayer > 2) layer.octaveLayer--"\
+                    @togglePrelistenLayerEvent="layer.prelistenLayer = !layer.prelistenLayer"\
+                    @toggleMuteLayerEvent="layer.muteLayer = !layer.muteLayer"\
                 ></layer-component>\
             </div>\
         </div>\
     ',
     components: {
         'layer-component': layerComponent,
-        'controller-component': controllerComponent
+        'controller-component': controllerComponent,
+        'key-selector-component': keySelectorComponent,
+        'scale-selector-component': scaleSelectorComponent
     },
     data () {
         return {
-            systemPlaying: false,
+            /** sequencer controller */ systemPlaying: false,
             bpm: 120,
-            nextId: 2,
+            unifiedControl: true,
+            n_bars: 1,
             inst_id: 1,
+            duration: [
+                "16n",
+                "16n"
+            ],
+            /** unified controller */ allLayersOctave: 4,
+            allLayersKey: 'C',
+            allLayersScale: 'Major',
+            prelistenSystem: true,
+            muteSystem: false,
+            inst_name: [
+                'nome_strumento1',
+                'nome_strumento2',
+                'drum: TR-808'
+            ],
+            /** state variables */ nextId: 2,
             layers: [
                 {
                     id: 0,
-                    num_beats: 3
+                    num_beats: 3,
+                    octaveLayer: 4,
+                    keyLayer: 'C',
+                    scaleLayer: 'Major',
+                    prelistenLayer: true,
+                    muteLayer: false
                 },
                 {
                     id: 1,
-                    num_beats: 2
+                    num_beats: 2,
+                    octaveLayer: 4,
+                    keyLayer: 'C',
+                    scaleLayer: 'Major',
+                    prelistenLayer: true,
+                    muteLayer: false
                 }, 
             ],
             inst_id: 1,
@@ -1264,7 +1370,11 @@ let sequencerComponent = {
                 'drum: TR-808'
             ],
             /*mettere nomi degli strumenti*/ n_bars: 1,
-            pot: true
+            duration: [
+                "16n",
+                "16n"
+            ],
+            window_width: null
         };
     },
     computed: {
@@ -1273,17 +1383,32 @@ let sequencerComponent = {
         }
     },
     methods: {
-        addLayer (num_beats_input) {
+        /** sequencer controller */ addLayer (num_beats_input) {
+            if (num_beats_input > 12) num_beats_input = 12;
             this.layers.push({
                 id: this.nextId,
-                num_beats: num_beats_input
+                num_beats: num_beats_input,
+                octaveLayer: this.allLayersOctave,
+                keyLayer: this.allLayersKey,
+                scaleLayer: this.allLayersScale,
+                prelistenLayer: this.prelistenSystem,
+                muteLayer: this.muteSystem
             });
             this.nextId += 1;
         },
         updateBPM (bpm_input) {
             this.bpm = bpm_input;
         },
-        /** l'uso di $ref non è dinamico, quindi se aggiungo layer quando sto suonando l'ultimo layer non parte */ playAll () {
+        addBar () {
+            for(idx in this.layers)this.$refs.layers_refs[idx].addLBar();
+        },
+        instSelected (inst_id) {
+            this.inst_id = inst_id;
+        },
+        changeDuration (inst_id, duration) {
+            this.duration[inst_id - 1] = 20 - duration * 4 + "n";
+        },
+        playAll () {
             this.systemPlaying = true;
             for(idx in this.layers)this.$refs.layers_refs[idx].isPlaying = 0;
             for(idx in this.layers)this.$refs.layers_refs[idx].play();
@@ -1298,15 +1423,50 @@ let sequencerComponent = {
                 this.playAll();
             }
         },
-        instSelected (inst_id) {
-            this.inst_id = inst_id;
+        /** unified controller */ changeKey (num_key) {
+            this.allLayersKey = num_key;
+            for(idx in this.layers)this.layers[idx].keyLayer = this.allLayersKey;
         },
-        addBar () {
-            for(idx in this.layers)this.$refs.layers_refs[idx].addLBar();
+        changeScale (num_scale) {
+            this.allLayersScale = num_scale;
+            for(idx in this.layers)this.layers[idx].scaleLayer = this.allLayersScale;
         },
-        potGlobalChange (pot) {
-            this.pot = pot;
+        moreOctave () {
+            if (this.allLayersOctave < 6) {
+                this.allLayersOctave++;
+                for(idx in this.layers)this.layers[idx].octaveLayer = this.allLayersOctave;
+            }
+        },
+        lessOctave () {
+            if (this.allLayersOctave > 2) {
+                this.allLayersOctave--;
+                for(idx in this.layers)this.layers[idx].octaveLayer = this.allLayersOctave;
+            }
+        },
+        togglePrelistenSystem () {
+            this.prelistenSystem = !this.prelistenSystem;
+            for(idx in this.layers)this.layers[idx].prelistenLayer = this.prelistenSystem;
+        },
+        toggleMuteSystem () {
+            this.muteSystem = !this.muteSystem;
+            for(idx in this.layers)this.layers[idx].muteLayer = this.muteSystem;
+        },
+        clearSystem () {
+            for(idx in this.layers)this.$refs.layers_refs[idx].clearLayer();
+        },
+        changeDuration (inst_id, duration) {
+            this.duration[inst_id - 1] = 20 - duration * 4 + "n";
+        },
+        resized () {
+            this.window_width = this.$refs.upperbox.clientWidth;
         }
+    },
+    mounted () {
+        this.window_width = this.$refs.upperbox.clientWidth;
+        window.addEventListener('resize', this.resized);
+    },
+    beforeDestroy () {
+        window.removeEventListener('resize', this.resized);
     }
 };
 var app = new Vue({
@@ -1315,8 +1475,31 @@ var app = new Vue({
         'sequencer-component': sequencerComponent
     }
 });
-var synth1 = new Tone.PolySynth().toDestination();
-var synth2 = new Tone.DuoSynth({
+var synth1 = new Tone.PolySynth(Tone.AMSynth).toDestination();
+synth1.set({
+    harmonicity: 1,
+    detune: 0,
+    oscillator: {
+        type: "sawtooth"
+    },
+    envelope: {
+        attack: 0.01,
+        decay: 0.1,
+        sustain: 0.3,
+        release: 0.07
+    },
+    modulation: {
+        type: "pulse"
+    },
+    modulationEnvelope: {
+        attack: 0.5,
+        decay: 0,
+        sustain: 0.5,
+        release: 0.07
+    }
+});
+var synth2 = new Tone.PolySynth(Tone.DuoSynth).toDestination();
+synth2.set({
     vibratoAmount: 0.5,
     vibratoRate: 5,
     harmonicity: 1.5,
@@ -1324,41 +1507,41 @@ var synth2 = new Tone.DuoSynth({
         volume: -10,
         portamento: 0,
         oscillator: {
-            type: "sine"
+            type: "pulse"
         },
         filterEnvelope: {
             attack: 0.01,
             decay: 0,
-            sustain: 1,
-            release: 0.5
+            sustain: 0.5,
+            release: 0.1
         },
         envelope: {
-            attack: 0.01,
-            decay: 0,
-            sustain: 1,
-            release: 0.5
+            attack: 0.005,
+            decay: 0.1,
+            sustain: 0.3,
+            release: 0.07
         }
     },
     voice1: {
         volume: -10,
         portamento: 0,
         oscillator: {
-            type: "sine"
+            type: "square"
         },
         filterEnvelope: {
             attack: 0.01,
             decay: 0,
-            sustain: 1,
-            release: 0.5
+            sustain: 0.5,
+            release: 0.1
         },
         envelope: {
-            attack: 0.01,
-            decay: 0,
-            sustain: 1,
-            release: 0.5
+            attack: 0.005,
+            decay: 0.1,
+            sustain: 0.3,
+            release: 0.07
         }
     }
-}).toDestination();
+});
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
